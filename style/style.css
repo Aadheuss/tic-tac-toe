@@ -397,11 +397,65 @@ h1,
   grid-template-columns: repeat(3, 100px);
 }
 
+.game {
+  font-weight: 500;
+  padding: 4rem 1.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--white-color);
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+.scoreboard {
+  justify-content: space-between;
+  gap: 1rem;
+  width: 300px;
+  background-color: var(--black-color);
+}
+
+.scoreboard,
+.round {
+  display: flex;
+}
+
+.return {
+  position: absolute;
+  top: 1rem;
+  left: 4rem;
+  border: var(--black-color) 1px solid;
+  padding: 0.25em 1em;
+}
+
+.round {
+  padding: 0.25em 1em;
+  gap: 0.25rem;
+  font-size: 1.25rem;
+  justify-content: center;
+}
+
+.scoreboard > div {
+  flex: 1;
+  padding: 0.25em 1em;
+  color: var(--white-color);
+  font-size: 1.25rem;
+}
+
+.scoreboard > div:first-child {
+  border-right: var(--white-color) 1px solid;
+}
+
 .gameboard > div {
+  background-color: var(--white-color);
   place-items: center;
   border: 1px black solid;
   height: 100px;
-  font-size: 3rem;
+  font-size: 4rem;
+  font-weight: 300;
 }
 
 .hidden {
@@ -410,11 +464,11 @@ h1,
 
 /* lobby screen selector*/
 .lobby {
+  position: relative;
   place-items: center;
   gap: 3rem;
-  margin: 4rem 0;
   font-size: 1.15rem;
-  padding: 2rem 1.5rem;
+  padding: 4rem 1.5rem;
 }
 
 .player-container {

@@ -373,15 +373,15 @@ h1 {
 }
 
 /*grid */
-.lobby 
+.lobby,
 .gameboard,
-.gameboard > div,
-.player-container {
+.gameboard > div {
   display: grid;
 }
 
 /*flex */
 h1,
+.player-container,
 .player,
 .player > div:first-child,
 .player > div:last-child {
@@ -410,16 +410,17 @@ h1,
 
 /* lobby screen selector*/
 .lobby {
+  place-items: center;
+  gap: 3rem;
   margin: 4rem 0;
   font-size: 1.15rem;
   padding: 2rem 1.5rem;
 }
 
 .player-container {
-  grid-auto-flow: column;
-  place-items: center;
-  align-content: space-between;
-  gap: 4rem;
+  justify-content: center;
+  align-items: center;
+  gap: min(4rem, 5vw);
   text-align: center;
 }
 
@@ -473,6 +474,23 @@ h1,
   flex: 1;
 }
 
+.selected {
+  font-weight: 400;
+  background-color: #3B82F6;
+}
+
+.start {
+  background-color: var(--black-color);
+  color: var(--white-color);
+  padding: 0.5em 1em;
+  font-weight: 700;
+}
+
+.type > *,
+.start {
+  cursor: pointer;
+}
+
 /* Pseudo elements */
 .player > div:first-child::before {
   content: "";
@@ -505,3 +523,23 @@ h1,
   background-image: url(../img/icons8-bot-100.png);
 }
 
+@media screen and (max-width: 720px) {
+  .player-container {
+    flex-direction: column;
+  }
+
+  .start {
+    font-size: 1.25rem;
+  }
+}
+
+ @media screen and (min-width: 720px) {
+  .player {
+    width: min(300px, 30vw);
+    height: min(300px, 30vw);
+  }
+
+  .start {
+    font-size: min(1.15rem, 1.5vw);
+  }
+ }

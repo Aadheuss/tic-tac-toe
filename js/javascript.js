@@ -2,39 +2,41 @@
 const lobby = (() => {
   const Players = [];
 
-  const player = (name, type, weapon) => {
-   return {name, type, weapon};
+  const player = (id, type, weapon) => {
+   return {id, type, weapon};
   }
   
-  const selected = document.querySelector('.one .type .selected').textContent;
-  const playerOne = player('playerOne', selected, 'O');
-  Players.push(playerOne);
-
   function pushPlayer (value) {
     Players.push(value);
   }
   
-  const playerTwo = (() => {
-    const typeList = document.querySelectorAll('.two .type > div');
+  const playerList = (() => {
+    const typeList = document.querySelectorAll('.type > div');
     typeList.forEach(type => type.addEventListener('click', addPlayer));
 
     function addPlayer () {
-      selectType(this);
-      const playerOne = player('playerTwo', selectType(this), 'X');
-      pushPlayer(playerOne);
-      typeList.forEach(type => type.addEventListener('click', toggleType));
+      const value = this.parentElement.parentElement.getAttribute('data-id');
+      const playerTList = document.querySelectorAll(`[data-id="${value}"] .type > div`);
+
+      if (Players.find(player => (player.id === value)) === undefined) {
+        const type = selectType(this);
+        const playerName = player(value, type, 'X');
+        pushPlayer(playerName);
+        playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
+      }
+
       gameReady();
     }
 
     function selectType (value) {
       value.classList.add('selected');
-      const type = this.textContent;
-      typeList.forEach(type => type.removeEventListener('click', addPlayer))
-      return{type};
+      const type = value.textContent;
+      return type;
     }
 
-    function toggleType () {
-      const i = 1;
+    function toggleType (value) {
+      const i = Players.findIndex(player => player.id === value);
+
       this.classList.toggle('selected');
       if (this.previousElementSibling) {
         this.previousElementSibling.classList.toggle('selected')
@@ -43,7 +45,7 @@ const lobby = (() => {
       if (this.nextElementSibling) {
         this.nextElementSibling.classList.toggle('selected')
       }
-
+    
       Players[i].type = this.textContent;
     }
   })();
@@ -51,6 +53,7 @@ const lobby = (() => {
   function gameReady () {
     const startButton = document.querySelector('.start');
     const game = document.querySelector('.game');
+    const playerContainer = document.querySelector('.player-container');
 
     if (Players.length === 2) {
       startButton.classList.remove('hidden');
@@ -58,22 +61,25 @@ const lobby = (() => {
     }
 
     function startGame () {
-      const exitButton = document.querySelector('.return')
       startButton.removeEventListener('click', startGame);
+      const exitButton = document.querySelector('.return')
       exitButton.addEventListener('click', exitGame);
       toggleHidden(game);
+      toggleHidden(playerContainer);
     }
   
     function exitGame () {
       const game = document.querySelector('.game');
       toggleHidden(game);
       startButton.addEventListener('click', startGame);
+      toggleHidden(playerContainer);
     }
   }
   
   function toggleHidden (value) {
     value.classList.toggle('hidden');
   }
+  
   return {Players};
 })()
 
@@ -81,20 +87,29 @@ const gameBoard = (() => {
   const domElements = document.querySelector('.gameboard');
   const gameBoard = [];
 
-  function tiles (value) {
-    return {value};
+  function tiles (index) {
+    return {index};
   }
 
   for (let i = 0; i < 9; i++) {
-    const obj = tiles(' ');
+    const obj = tiles(i);
     gameBoard.push(obj);
   }
   
-  gameBoard.forEach(tiles => render(domElements, 'div', tiles.value));
+  gameBoard.forEach(tiles => render.call(tiles, domElements, 'div'));
+  document.querySelectorAll('.gameboard > div').forEach(tiles => tiles.addEventListener('click', () => {
+    console.log(lobby.Players)
+    tiles.value = lobby.Players[1].weapon;
+    tiles.textContent = tiles.value;
+    const index = Number(tiles.getAttribute('data-index'));
+    gameBoard[index] = tiles.value;
+    console.log(tiles.getAttribute('data-index'));
+    console.log(gameBoard[index]);
+  }))
 
-  function render (container, type, value) {
+  function render (container, type) {
     const item = document.createElement(type);
-    item.textContent = value;
+    item.setAttribute('data-index', `${this.index}`);
     container.appendChild(item)
   }
 

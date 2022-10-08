@@ -533,6 +533,10 @@ h1,
   background-color: #3B82F6;
 }
 
+.selected:last-child {
+  background-color: #9333EA;
+}
+
 .start {
   background-color: var(--black-color);
   color: var(--white-color);
@@ -584,6 +588,10 @@ h1,
 
   .start {
     font-size: 1.25rem;
+  }
+
+  .return {
+    left: 1rem;
   }
 }
 

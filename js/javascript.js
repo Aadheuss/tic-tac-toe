@@ -47,11 +47,24 @@ const Players = (() => {
 
     if (Lobby.Players.find(player => (player.id === value)) === undefined) {
       const type = selectType(this);
-      const playerName = player(value, type, 'X');
+      const weapon = selectWeapon();
+      console.log(weapon)
+      const playerName = player(value, type, weapon);
       pushPlayer(playerName);
       playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
     }
     Lobby.checkState()
+  }
+
+  function selectWeapon () {
+    let weapon;
+    if (Lobby.Players.length === 0) {
+      weapon = 'O';
+    } else {
+      weapon = 'X';
+    }
+
+    return weapon;
   }
 
   function selectType (value) {
@@ -84,6 +97,7 @@ const Players = (() => {
 const gameBoard = (() => {
   const domElements = document.querySelector('.gameboard');
   const gameBoard = [];
+  let turn = 0;
 
   function tiles (index) {
     return {index};
@@ -95,15 +109,26 @@ const gameBoard = (() => {
   }
   
   gameBoard.forEach(tiles => render.call(tiles, domElements, 'div'));
-  document.querySelectorAll('.gameboard > div').forEach(tiles => tiles.addEventListener('click', () => {
-    console.log(Lobby.Players)
-    tiles.value = Lobby.Players[1].weapon;
-    tiles.textContent = tiles.value;
-    const index = Number(tiles.getAttribute('data-index'));
-    gameBoard[index] = tiles.value;
-    console.log(tiles.getAttribute('data-index'));
-    console.log(gameBoard[index]);
-  }))
+
+  document.querySelectorAll('.gameboard > div').forEach(tiles => tiles.addEventListener('click', Round))
+
+  function Round () {
+      if (turn % 2 === 0) {
+        playerTurn.call(this, 0);
+      } else {
+        playerTurn.call(this, 1);
+      }
+  }
+
+  function playerTurn (i) {
+    if (this.textContent === '') {
+    this.value = Lobby.Players[i].weapon;
+    this.textContent = this.value;
+    const index = Number(this.getAttribute('data-index'));
+    gameBoard[index] = this.value;
+    turn++;
+    }
+  }
 
   function render (container, type) {
     const item = document.createElement(type);

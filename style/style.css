@@ -545,7 +545,8 @@ h1,
 }
 
 .type > *,
-.start {
+.start,
+.gameboard > div {
   cursor: pointer;
 }
 

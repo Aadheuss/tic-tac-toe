@@ -48,7 +48,6 @@ const Players = (() => {
     if (Lobby.Players.find(player => (player.id === value)) === undefined) {
       const type = selectType(this);
       const weapon = selectWeapon();
-      console.log(weapon)
       const playerName = player(value, type, weapon);
       pushPlayer(playerName);
       playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
@@ -94,25 +93,25 @@ const Players = (() => {
  })();
 
 
-const gameBoard = (() => {
+const Game = (() => {
   const domElements = document.querySelector('.gameboard');
   const gameBoard = [];
   let turn = 0;
 
-  function tiles (index) {
-    return {index};
+  function tiles (index, value) {
+    return {index, value};
   }
 
   for (let i = 0; i < 9; i++) {
-    const obj = tiles(i);
+    const obj = tiles(i, '');
     gameBoard.push(obj);
   }
   
   gameBoard.forEach(tiles => render.call(tiles, domElements, 'div'));
 
-  document.querySelectorAll('.gameboard > div').forEach(tiles => tiles.addEventListener('click', Round))
+  document.querySelectorAll('.gameboard > div').forEach(tiles => tiles.addEventListener('click', round))
 
-  function Round () {
+  function round () {
       if (turn % 2 === 0) {
         playerTurn.call(this, 0);
       } else {
@@ -125,9 +124,11 @@ const gameBoard = (() => {
     this.value = Lobby.Players[i].weapon;
     this.textContent = this.value;
     const index = Number(this.getAttribute('data-index'));
-    gameBoard[index] = this.value;
+    gameBoard[index].value = this.value;
     turn++;
     }
+
+    winCon.gameLogic();
   }
 
   function render (container, type) {
@@ -139,4 +140,46 @@ const gameBoard = (() => {
   return {gameBoard};
 })();
 
+const winCon = (() => {
+  const gameBoard = Game.gameBoard;
+  function gameLogic () {
+    checkRow ([0, 3, 6]);
+    checkColumn([0, 1, 2]);
+    checkCross(4);
+    function checkRow (array) {
+      array.forEach(a => {
+        const b = a + 1;
+        const c = b + 1;
+        if (gameBoard[a].value !==  '' && gameBoard[a].value === gameBoard[b].value && gameBoard[b].value === gameBoard[c].value) {
+          console.log(gameBoard[a].value);
+        }
+      })
+    }
+
+    function checkColumn (array) {
+      array.forEach(a => {
+        const b = a + 3;
+        const c = b + 3;
+        if (gameBoard[a].value !==  '' && gameBoard[a].value === gameBoard[b].value && gameBoard[b].value === gameBoard[c].value) {
+          console.log(gameBoard[a].value);
+        }
+      })
+    }
+    
+    function checkCross (n) {
+      const a = n + 2;
+      const b = n - 2;
+      const c = n + 4;
+      const d = n - 4;
+      if (gameBoard[n].value !==  '' && gameBoard[n].value === gameBoard[a].value && gameBoard[a].value === gameBoard[b].value ||
+          gameBoard[n].value !==  '' && gameBoard[n].value === gameBoard[c].value && gameBoard[c].value === gameBoard[d].value  ) {
+        console.log(gameBoard[n].value);
+      }
+    }
+  }
+
+  return {gameLogic};
+})()
+
+console.log(winCon.winner);
 //a function inside gameboard will keep track of the value of the array;

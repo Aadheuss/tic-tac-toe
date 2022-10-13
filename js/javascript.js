@@ -288,26 +288,33 @@ const winCon = (() => {
 
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
-    winner.parentElement.classList.toggle('hidden');
+    winner.parentElement.classList.remove('hidden');
     
     if (scoreBoard.p1Score > scoreBoard.p2Score) {
       winner.textContent = 'Player1 wins!'
+      winner.parentElement.classList.remove('no-win');
     } else if (scoreBoard.p1Score < scoreBoard.p2Score) {
       winner.textContent = 'Player2 wins!';
+      winner.parentElement.classList.remove('no-win');
     } else {
       winner.textContent = `It's a tie!`;
+      winner.parentElement.classList.add('no-win');
     }
     
-    document.querySelector('.restart').classList.toggle('hidden');
+    const restartButton = document.querySelector('.restart');
+    restartButton.classList.remove('hidden');
+    restartButton.addEventListener('click', playAgain)
     
     function playAgain () {
-    scoreBoard.round = 0;
-    scoreBoard.p1Score = 0;
-    scoreBoard.p2Score = 0;
-    updateScore();
-    updateRound();
+      restartButton.classList.add('hidden');
+      scoreBoard.round = 0;
+      scoreBoard.p1Score = 0;
+      scoreBoard.p2Score = 0;
+
+      updateScore();
+      updateRound();
+      gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
     }
   }
   return {startRound, startTurn};
 })()
-//a function inside gameboard will keep track of the value of the array;

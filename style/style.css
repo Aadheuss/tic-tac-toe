@@ -667,8 +667,8 @@ button {
   position: absolute;
   background-color: var(--white-color);
   border: none;
-  right: 0.5rem;
-  top: 0.5rem;
+  right: 0.25rem;
+  top: 0.25rem;
   width: 25px;
   height: 25px;
 }
@@ -692,6 +692,11 @@ button {
   color: var(--white-color);
 
 }
+
+.no-win::before {
+  background-image: url(../img/winner.png);
+}
+
 /* hide content */
 .hidden {
   display: none;

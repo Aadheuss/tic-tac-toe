@@ -542,8 +542,16 @@ h1,
 .type > *,
 .start,
 .gameboard > div,
+.return,
 button {
   cursor: pointer;
+}
+
+.return:hover {
+  border-top-color: #DC2626;
+  border-bottom-color: #A3E635;
+  background-color: var(--black-color);
+  color: var(--white-color);
 }
 
 /* Pseudo elements */
@@ -654,9 +662,9 @@ button {
   content: "";
   background-image: url(../img/plus.svg);
   background-repeat: no-repeat;
-  background-size: 25px 25px;
-  width: 25px;
-  height: 25px;
+  background-size: 20px 20px;
+  width: 20px;
+  height: 20px;
   transform: rotate(45deg);
   cursor: pointer;
 }
@@ -669,8 +677,8 @@ button {
   border: none;
   right: 0.25rem;
   top: 0.25rem;
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
 }
 
 .restart {
@@ -691,6 +699,11 @@ button {
   background-color: var(--black-color);
   color: var(--white-color);
 
+}
+
+.restart button:hover {
+  color: var(--black-color);
+  background-color: #FACC15;
 }
 
 .no-win::before {

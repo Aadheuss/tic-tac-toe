@@ -1,10 +1,12 @@
 //store game board as an array inside of a game board object
 const Lobby = (() => {
   const Players = [];
-  const startButton = document.querySelector('.start');
+  
   const game = document.querySelector('.game');
+  const startButton = document.querySelector('.start');
   const playerContainer = document.querySelector('.player-container');
   const winnerExitBtn = document.querySelector('.winner > button');
+  
   winnerExitBtn.addEventListener('click', toggleHidden.bind(winnerExitBtn, winnerExitBtn.parentElement));
 
   function checkState () { 
@@ -27,17 +29,26 @@ const Lobby = (() => {
     toggleHidden(game);
     startButton.addEventListener('click', startGame);
     toggleHidden(playerContainer);
+    
+    for (let i = 0; i <= Players.length; i++) {
+      Players.pop();
+    }
+
+    startButton.classList.add('hidden');
+    const playerSelection = document.querySelectorAll('.selected')
+
+    if (playerSelection !== null) {
+      playerSelection.forEach(item => item.classList.remove('selected'));
+    }
+
+    winCon.reset();
+    winnerExitBtn.parentElement.classList.add('hidden');
   }
   
   function toggleHidden (value) {
     value.classList.toggle('hidden')
   }
   
-  return {Players, checkState};
-})()
- 
-
-const Players = (() => {
   const player = (id, type, weapon) => {
     return {id, type, weapon};
   }
@@ -49,19 +60,19 @@ const Players = (() => {
     const value = this.parentElement.parentElement.getAttribute('data-id');
     const playerTList = document.querySelectorAll(`[data-id="${value}"] .type > div`);
 
-    if (Lobby.Players.find(player => (player.id === value)) === undefined) {
+    if (Players.find(player => (player.id === value)) === undefined) {
       const type = selectType(this);
       const weapon = selectWeapon();
       const playerName = player(value, type, weapon);
       pushPlayer(playerName);
       playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
     }
-    Lobby.checkState()
+    checkState()
   }
 
   function selectWeapon () {
     let weapon;
-    if (Lobby.Players.length === 0) {
+    if (Players.length === 0) {
       weapon = 'O';
     } else {
       weapon = 'X';
@@ -77,24 +88,22 @@ const Players = (() => {
   }
   
   function pushPlayer (value) {
-    Lobby.Players.push(value);
+    Players.push(value);
   }
 
   function toggleType (value) {
-    const i = Lobby.Players.findIndex(player => player.id === value);
-    this.classList.toggle('selected');
+    const i = Players.findIndex(player => player.id === value);
+    this.classList.add('selected');
 
-    if (this.previousElementSibling) {
-      this.previousElementSibling.classList.toggle('selected')
+    if (this.textContent === 'Human') {
+      this.nextElementSibling.classList.remove('selected')
+    } else {
+      this.previousElementSibling.classList.remove('selected')
     }
-
-    if (this.nextElementSibling) {
-      this.nextElementSibling.classList.toggle('selected')
-    }
-
-    Lobby.Players[i].type = this.textContent;
   }
- })();
+  
+  return {Players, checkState};
+})()
 
 
 const Game = (() => {
@@ -303,18 +312,32 @@ const winCon = (() => {
     
     const restartButton = document.querySelector('.restart');
     restartButton.classList.remove('hidden');
-    restartButton.addEventListener('click', playAgain)
-    
-    function playAgain () {
-      restartButton.classList.add('hidden');
-      scoreBoard.round = 0;
-      scoreBoard.p1Score = 0;
-      scoreBoard.p2Score = 0;
-
-      updateScore();
-      updateRound();
-      gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
-    }
+    restartButton.addEventListener('click', playAgain);
   }
-  return {startRound, startTurn};
+
+  function playAgain () {
+    const restartButton = document.querySelector('.restart');
+    restartButton.classList.add('hidden');
+
+    scoreBoard.round = 0;
+    scoreBoard.p1Score = 0;
+    scoreBoard.p2Score = 0;
+
+    updateScore();
+    updateRound();
+    gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
+  }
+
+  function reset () {
+    turn = 1;
+    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', startRound));
+    playAgain();
+    gameBoard.forEach(item => item.value = '');
+    gameBoardDom.forEach(tiles => {
+          tiles.textContent = '';
+          tiles.classList.remove('win', 'tie');}
+    );
+  }
+
+  return {startRound, startTurn, reset};
 })()

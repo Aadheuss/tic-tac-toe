@@ -279,7 +279,7 @@ const winCon = (() => {
     if (win === true || full === true) {
       gameBoardDom.forEach(tiles => tiles.removeEventListener('click', startRound));
       gameBoard.forEach(item => item.value = '');
-      if (full === true) {
+      if (full === true && win !== true) {
         checkWinner('none');
         gameBoardDom.forEach(item => item.classList.add('tie'));
       }

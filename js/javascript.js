@@ -341,3 +341,19 @@ const winCon = (() => {
 
   return {startRound, startTurn, reset};
 })()
+
+const inputName = (() =>{
+  const inputDom = document.querySelectorAll('input');
+  inputDom.forEach(dom => console.log(dom.previousElementSibling))
+  inputDom.forEach(dom => dom.addEventListener('input', checkName));
+  inputDom.forEach(dom => dom.addEventListener('focus', () => dom.previousElementSibling.classList.add('black')));
+  inputDom.forEach(dom => dom.addEventListener('blur', () => dom.previousElementSibling.classList.remove('black')));
+  function checkName () {
+    console.log(this)
+    if (this.value.length > 0) {
+      this.previousElementSibling.classList.add('hidden');
+    } else {
+      this.previousElementSibling.classList.remove('hidden');
+    }
+  }
+})()

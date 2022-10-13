@@ -489,6 +489,8 @@ h1,
 }
 
 .player {
+  position: relative;
+  border-left: 1px solid var(--yellow);
   background-color: var(--black-color);
   flex-direction: column;
   border-radius: 8px;
@@ -611,10 +613,6 @@ h1,
   font-weight: 600;
 }
 
-.no-win::before {
-  background-image: url(../img/winner.png);
-}
-
 .type > *,
 .start,
 .gameboard > div,
@@ -649,6 +647,10 @@ button {
   background-size: 125px 125px;
   width: 125px;
   height: 125px;
+}
+
+.no-win::before {
+  background-image: url(../img/winner.png);
 }
 
 .winner > button::before {
@@ -712,6 +714,46 @@ button {
   .start {
     font-size: min(1.15rem, 1.5vw);
   }
+ }
+
+ .player-name {
+  position: absolute;
+  right: 3rem;
+ }
+
+ .player-name > form {
+  display: flex;
+  position: relative;
+ }
+
+ .player-name input {
+  background-color: var(--black-color);
+  color: var(--yellow);
+  width: 125px;
+  height: 1.5rem;
+  padding: 0.25em 0.5em;
+  border: var(--yellow) 1px solid;
+ }
+
+ .player-name input:focus-visible {
+  outline: double var(--human) 1px;
+  background-color: var(--white-color);
+  color: var(--black-color);
+ }
+
+ .player-name label {
+  justify-self: center;
+  font-size: 1rem;
+  color: var(--yellow);
+  font-weight: 500;
+  position: absolute;
+  align-self: center;
+  bottom: 0.25em;
+  left: 0.5em;
+ }
+
+ .player-name .black {
+  color: var(--black-color);
  }
 
 /* hide content */

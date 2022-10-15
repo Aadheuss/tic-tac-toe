@@ -367,6 +367,7 @@ template {
 body {
   font-family: 'Roboto', sans-serif;
   background-color: var(--white-color);
+  background-image: linear-gradient(to right, #757f9a , #d7dde8);
 }
 
 h1 {
@@ -402,9 +403,14 @@ h1,
   grid-template-columns: repeat(3, 100px);
 }
 
+.game h1 {
+  margin-bottom: 4rem;
+  width: 100vw;
+}
+
 .game {
+  height: 100vh;
   font-weight: 500;
-  padding-top: 4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -428,7 +434,7 @@ h1,
 
 .return {
   position: absolute;
-  top: 1rem;
+  top: 6.5rem;
   left: 4rem;
   border: var(--black-color) 1px solid;
   padding: 0.25em 1em;
@@ -442,6 +448,8 @@ h1,
 }
 
 .scoreboard > div {
+  display: flex;
+  gap: 0.5rem;
   flex: 1;
   padding: 0.25em 1em;
   color: var(--white-color);
@@ -479,8 +487,17 @@ h1,
 }
 
 .player-container > div:not(:nth-child(2)) {
+  background-image: linear-gradient(to bottom,#d7dde8, var(--white-color));
   border: var(--black-color) solid 2px;
   padding: 1rem;
+}
+
+.player-container > div[class='human'] {
+  background-image: linear-gradient(to left, #2f80ed, #56ccf2);
+}
+
+.player-container > div[class='ai'] {
+  background-image: linear-gradient(to top, #757f9a , #d7dde8);
 }
 
 .player-container > div:nth-child(2) {
@@ -532,11 +549,11 @@ h1,
 
 .selected {
   font-weight: 400;
-  background-color: var(--human);
+  background-image: linear-gradient(to left, #2f80ed, #56ccf2);
 }
 
 .selected:last-child {
-  background-color: var(--ai);
+  background-image: linear-gradient(to right, #757f9a , #d7dde8);
 }
 
 .start {
@@ -736,7 +753,9 @@ button {
  }
 
  .player-name input:focus-visible {
-  outline: double var(--human) 1px;
+  outline: double #0EA5E9 2px;
+  box-shadow: 0 0 0.5rem #0EA5E9;
+  border: none;
   background-color: var(--white-color);
   color: var(--black-color);
  }

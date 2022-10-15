@@ -19,7 +19,7 @@
         <div class="player one" data-id="player1">
           <div>
             <form class="player-name" method="post" action="*">
-              <div>
+              <div data-id="player1">
                 <label for="name">Name</label>
                 <input id="name" type="text" name="name" placeholder=" ">
               </div>
@@ -38,7 +38,7 @@
         <div class="player two" data-id="player2">
           <div>
             <form class="player-name" method="post" action="*">
-              <div>
+              <div data-id="player2">
                 <label for="name">Name</label>
                 <input id="name" type="text" name="name" placeholder=" ">
               </div>
@@ -51,17 +51,24 @@
         </div>
       </div>
     </div>
-    <div class="game hidden">
-      <div class="return">Return</div>
-      <div class="round">Round <span> 1</span></div>
-      <div class="scoreboard">
-        <div data-score="player1">player1: <span>0</span></div>
-        <div data-score="player2">player2: <span>0</span></div>
+  </div>
+  <div class="game hidden">
+    <h1>TIC TAC TOE</h1>  
+    <div class="return">Return</div>
+    <div class="round">Round <span> 1</span></div>
+    <div class="scoreboard">
+      <div data-score="player1">
+        <div>player1:</div>
+        <span>0</span>
       </div>
-      <div class="gameboard"></div>
-      <div class="restart hidden">Do you want to play again?
-        <button>restart</button>
+      <div data-score="player2">
+        <div>player2:</div>
+        <span>0</span>
       </div>
+    </div>
+    <div class="gameboard"></div>
+    <div class="restart hidden">Do you want to play again?
+      <button>restart</button>
     </div>
   </div>
   <div class="winner hidden">

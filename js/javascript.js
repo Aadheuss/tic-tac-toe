@@ -1,4 +1,4 @@
-//store game board as an array inside of a game board object
+//Check the state of the current state of the lobby
 const Lobby = (() => {
   const Players = [];
   
@@ -23,8 +23,17 @@ const Lobby = (() => {
     exitButton.addEventListener('click', exitGame);
     toggleHidden(game);
     toggleHidden(playerContainer);
+    playersReady.updateName();
   }
   
+  function resetType () {
+    const playerContainer = document.querySelectorAll('.player-container > div:not(:nth-child(2))')
+    playerContainer.forEach(player => {
+      player.classList.remove('human');
+      player.classList.remove('ai');
+      })
+  }
+
   function exitGame () {
     toggleHidden(game);
     startButton.addEventListener('click', startGame);
@@ -43,14 +52,27 @@ const Lobby = (() => {
 
     winCon.reset();
     winnerExitBtn.parentElement.classList.add('hidden');
+    domUpdate.clearInput();
+    document.querySelectorAll('input').forEach(input => input.previousElementSibling.classList.remove('hidden'))
+    Lobby.Players.forEach(player => player.name = '');
+    resetType();
+    playersReady.resetName();
   }
   
   function toggleHidden (value) {
     value.classList.toggle('hidden')
   }
-  
-  const player = (id, type, weapon) => {
-    return {id, type, weapon};
+
+  return {Players, checkState};
+})()
+
+//check, edit, and add players
+const playersReady = (() => {
+  let player1Name = '';
+  let player2Name = '';
+
+  const player = (id, type, weapon, name) => {
+    return {id, type, weapon, name};
   }
 
   const typeList = document.querySelectorAll('.type > div');
@@ -60,19 +82,27 @@ const Lobby = (() => {
     const value = this.parentElement.parentElement.getAttribute('data-id');
     const playerTList = document.querySelectorAll(`[data-id="${value}"] .type > div`);
 
-    if (Players.find(player => (player.id === value)) === undefined) {
+    if (Lobby.Players.find(player => (player.id === value)) === undefined) {
+      let name;
+      if (value === 'player1') {
+        name = player1Name
+      } else {
+        name = player2Name;
+      }
+
       const type = selectType(this);
       const weapon = selectWeapon();
-      const playerName = player(value, type, weapon);
+      const playerName = player(value, type, weapon, name);
       pushPlayer(playerName);
+      toggleType.call(this, value);
       playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
     }
-    checkState()
+    Lobby.checkState()
   }
 
   function selectWeapon () {
     let weapon;
-    if (Players.length === 0) {
+    if (Lobby.Players.length === 0) {
       weapon = 'O';
     } else {
       weapon = 'X';
@@ -86,26 +116,59 @@ const Lobby = (() => {
     const type = value.textContent;
     return type;
   }
-  
+
   function pushPlayer (value) {
-    Players.push(value);
+    Lobby.Players.push(value);
   }
 
   function toggleType (value) {
-    const i = Players.findIndex(player => player.id === value);
+    const i = Lobby.Players.findIndex(player => player.id === value);
     this.classList.add('selected');
 
     if (this.textContent === 'Human') {
-      this.nextElementSibling.classList.remove('selected')
+      Lobby.Players[i].type = 'human';
+      this.nextElementSibling.classList.remove('selected');
+      this.parentElement.parentElement.parentElement.classList.remove('ai');
+      this.parentElement.parentElement.parentElement.classList.add('human');
     } else {
-      this.previousElementSibling.classList.remove('selected')
+      Lobby.Players[i].type = 'ai';
+      this.previousElementSibling.classList.remove('selected');
+      this.parentElement.parentElement.parentElement.classList.remove('human');
+      this.parentElement.parentElement.parentElement.classList.add('ai');
     }
   }
-  
-  return {Players, checkState};
+
+  const inputDom = document.querySelectorAll('input');
+  inputDom.forEach(dom => dom.addEventListener('input', inputName));
+
+  function inputName () {
+    const playerId = this.parentElement.getAttribute('data-id');
+
+    if (playerId === 'player1') {
+      player1Name = this.value;
+    } else {
+      player2Name = this.value;
+    }
+  }
+
+  function resetName () {
+    player1Name = '';
+    player2Name = '';
+  }
+
+  function updateName () {
+    const p1 = Lobby.Players.find(player => player.id === 'player1');
+    const p2 = Lobby.Players.find(player => player.id === 'player2');
+    p1.name = player1Name;
+    p2.name = player2Name;
+    domUpdate.changePlayersName();
+  }
+
+  return {resetName, updateName}
 })()
 
 
+//make gameboard for players to play on
 const Game = (() => {
   const domElements = document.querySelector('.gameboard');
   const gameBoard = [];
@@ -130,7 +193,7 @@ const Game = (() => {
   return {gameBoard};
 })();
 
-
+//Check and update the game 
 const winCon = (() => {
   const gameBoard = Game.gameBoard;
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
@@ -298,13 +361,25 @@ const winCon = (() => {
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
     winner.parentElement.classList.remove('hidden');
-    
+    const p1 = Lobby.Players.find(player => player.id === 'player1');
+    const p2 = Lobby.Players.find(player => player.id === 'player2');
+
     if (scoreBoard.p1Score > scoreBoard.p2Score) {
-      winner.textContent = 'Player1 wins!'
+      if (p1.name !== '') {
+        winner.textContent = `${p1.name} wins!`;
+      } else {
+        winner.textContent = 'Player1 wins!'
+      } 
       winner.parentElement.classList.remove('no-win');
+
     } else if (scoreBoard.p1Score < scoreBoard.p2Score) {
-      winner.textContent = 'Player2 wins!';
+      if (p2.name !== '') {
+        winner.textContent = `${p2.name} wins!`;
+      } else {
+        winner.textContent = 'Player2 wins!';
+      }
       winner.parentElement.classList.remove('no-win');
+
     } else {
       winner.textContent = `It's a tie!`;
       winner.parentElement.classList.add('no-win');
@@ -342,18 +417,50 @@ const winCon = (() => {
   return {startRound, startTurn, reset};
 })()
 
-const inputName = (() =>{
+const domUpdate = (() => {
+  const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > div');
+  const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > div');
   const inputDom = document.querySelectorAll('input');
-  inputDom.forEach(dom => console.log(dom.previousElementSibling))
-  inputDom.forEach(dom => dom.addEventListener('input', checkName));
+
+  inputDom.forEach(dom => dom.addEventListener('input', hideLabel));
   inputDom.forEach(dom => dom.addEventListener('focus', () => dom.previousElementSibling.classList.add('black')));
   inputDom.forEach(dom => dom.addEventListener('blur', () => dom.previousElementSibling.classList.remove('black')));
-  function checkName () {
-    console.log(this)
+
+  function hideLabel () {
     if (this.value.length > 0) {
       this.previousElementSibling.classList.add('hidden');
     } else {
       this.previousElementSibling.classList.remove('hidden');
     }
   }
+
+  function changePlayersName () {
+    const p1 = Lobby.Players.find(player => player.id === 'player1');
+    const p2 = Lobby.Players.find(player => player.id === 'player2');
+
+
+    if (p1 !== undefined) {
+      if (p1.name === '') {
+        p1ScoreDom.textContent = 'player1:'
+      } else {
+        p1ScoreDom.textContent = `${p1.name}:`;
+      }
+    }
+    
+    if (p2 !== undefined) {
+      if (p2.name === '') {
+        p2ScoreDom.textContent = 'player2:'
+      } else {
+        p2ScoreDom.textContent = `${p2.name}:`;
+      }
+    }
+  }
+  
+  function clearInput () {
+    inputDom.forEach(input => input.value = '');
+  }
+
+  clearInput();
+
+  return {changePlayersName, clearInput, hideLabel}
 })()

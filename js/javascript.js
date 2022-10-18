@@ -365,10 +365,12 @@ const gameLogic = (() => {
   
   function checkValue (a, b, c) {
     if (board[a].value !==  '' && board[a].value === board[b].value && board[b].value === board[c].value) {
-      currentPlayer.changeTilesStyle(a, b, c);
-      const result = Lobby.Players.find(item => item.weapon === board[a].value);
-      scoreBoard.win = true;
-      checkWinner(result);
+      if (scoreBoard.win !== true) {
+        currentPlayer.changeTilesStyle(a, b, c);
+        const result = Lobby.Players.find(item => item.weapon === board[a].value);
+        scoreBoard.win = true;
+        checkWinner(result);
+      }
     }
   }
   

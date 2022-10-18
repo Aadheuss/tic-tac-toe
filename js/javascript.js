@@ -1,29 +1,59 @@
-//Check the state of the current state of the lobby
+//Check the current state of the lobby
 const Lobby = (() => {
   const Players = [];
-  
   const game = document.querySelector('.game');
-  const startButton = document.querySelector('.start');
   const playerContainer = document.querySelector('.player-container');
   const winnerExitBtn = document.querySelector('.winner > button');
+  const startButton = document.querySelector('.start');
   
   winnerExitBtn.addEventListener('click', toggleHidden.bind(winnerExitBtn, winnerExitBtn.parentElement));
 
   function checkState () { 
     if (Players.length === 2) {
       startButton.classList.remove('hidden');
+      currentPlayer.startTurn();
       startButton.addEventListener('click', startGame);
-      winCon.startTurn();
     }
   }
 
   function startGame() {
-    const exitButton = document.querySelector('.return')
-    startButton.removeEventListener('click', startGame);
     exitButton.addEventListener('click', exitGame);
+    startButton.removeEventListener('click', startGame);
     toggleHidden(game);
     toggleHidden(playerContainer);
-    playersReady.updateName();
+    pNameDom.updateName();
+    gameBoardDom.checkPlayerTurn();
+  }
+  
+
+  const exitButton = document.querySelector('.return');
+  function exitGame () {
+    exitButton.removeEventListener('click', exitGame);
+    startButton.addEventListener('click', startGame);
+    toggleHidden(game);
+    toggleHidden(playerContainer);
+    //delete players
+    for (let i = 0; i <= Players.length; i++) {
+      Players.pop();
+    }
+
+    toggleHidden(startButton);
+    const playerSelection = document.querySelectorAll('.selected')
+    if (playerSelection !== null) {
+      playerSelection.forEach(item => item.classList.remove('selected'));
+    }
+
+    winnerExitBtn.parentElement.classList.add('hidden');
+    pNameDom.clearInput();
+    document.querySelectorAll('input').forEach(input => input.previousElementSibling.classList.remove('hidden'))
+    Lobby.Players.forEach(player => player.name = '');
+    resetType();
+    pNameDom.resetName();
+    replay.reset();
+  }
+  
+  function toggleHidden (value) {
+    value.classList.toggle('hidden')
   }
   
   function resetType () {
@@ -34,43 +64,11 @@ const Lobby = (() => {
       })
   }
 
-  function exitGame () {
-    toggleHidden(game);
-    startButton.addEventListener('click', startGame);
-    toggleHidden(playerContainer);
-    
-    for (let i = 0; i <= Players.length; i++) {
-      Players.pop();
-    }
-
-    startButton.classList.add('hidden');
-    const playerSelection = document.querySelectorAll('.selected')
-
-    if (playerSelection !== null) {
-      playerSelection.forEach(item => item.classList.remove('selected'));
-    }
-
-    winCon.reset();
-    winnerExitBtn.parentElement.classList.add('hidden');
-    domUpdate.clearInput();
-    document.querySelectorAll('input').forEach(input => input.previousElementSibling.classList.remove('hidden'))
-    Lobby.Players.forEach(player => player.name = '');
-    resetType();
-    playersReady.resetName();
-  }
-  
-  function toggleHidden (value) {
-    value.classList.toggle('hidden')
-  }
-
   return {Players, checkState};
-})()
+})();
 
 //check, edit, and add players
 const playersReady = (() => {
-  let player1Name = '';
-  let player2Name = '';
-
   const player = (id, type, weapon, name) => {
     return {id, type, weapon, name};
   }
@@ -85,9 +83,9 @@ const playersReady = (() => {
     if (Lobby.Players.find(player => (player.id === value)) === undefined) {
       let name;
       if (value === 'player1') {
-        name = player1Name
+        name = pNameDom.p1Name
       } else {
-        name = player2Name;
+        name = pNameDom.p2Name;
       }
 
       const type = selectType(this);
@@ -107,7 +105,6 @@ const playersReady = (() => {
     } else {
       weapon = 'X';
     }
-
     return weapon;
   }
 
@@ -137,41 +134,12 @@ const playersReady = (() => {
       this.parentElement.parentElement.parentElement.classList.add('ai');
     }
   }
-
-  const inputDom = document.querySelectorAll('input');
-  inputDom.forEach(dom => dom.addEventListener('input', inputName));
-
-  function inputName () {
-    const playerId = this.parentElement.getAttribute('data-id');
-
-    if (playerId === 'player1') {
-      player1Name = this.value;
-    } else {
-      player2Name = this.value;
-    }
-  }
-
-  function resetName () {
-    player1Name = '';
-    player2Name = '';
-  }
-
-  function updateName () {
-    const p1 = Lobby.Players.find(player => player.id === 'player1');
-    const p2 = Lobby.Players.find(player => player.id === 'player2');
-    p1.name = player1Name;
-    p2.name = player2Name;
-    domUpdate.changePlayersName();
-  }
-
-  return {resetName, updateName}
-})()
-
+})();
 
 //make gameboard for players to play on
-const Game = (() => {
+const gameBoard = (() => {
   const domElements = document.querySelector('.gameboard');
-  const gameBoard = [];
+  const board = [];
 
   function tiles (index, value) {
     return {index, value};
@@ -179,10 +147,10 @@ const Game = (() => {
 
   for (let i = 0; i < 9; i++) {
     const obj = tiles(i, '');
-    gameBoard.push(obj);
+    board.push(obj);
   }
   
-  gameBoard.forEach(tiles => render.call(tiles, domElements, 'div'));
+  board.forEach(tiles => render.call(tiles, domElements, 'div'));
  
   function render (container, type) {
     const item = document.createElement(type);
@@ -190,53 +158,13 @@ const Game = (() => {
     container.appendChild(item)
   }
 
-  return {gameBoard};
+  return {board};
 })();
 
-//Check and update the game 
-const winCon = (() => {
-  const gameBoard = Game.gameBoard;
-  const gameBoardDom = document.querySelectorAll('.gameboard > div');
-  let turn = 1;
-  let win = false;
-
-  gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
- 
-  const scoreBoard = (() => {
-    let round = 1;
-    let p1Score = 0;
-    let p2Score = 0;
-    return {p1Score, p2Score, round};
-  })();
+//highlight the current player
+const currentPlayer = (() => {
+  const board = gameBoard.board;
   
-  function startRound () {
-    if (turn % 2 === 0) {
-      playerTurn.call(this, 1);
-    } else {
-      playerTurn.call(this, 0);
-    }
-  }
-
-  function playerTurn (i) {
-    if (this.textContent === '') {
-    this.value = Lobby.Players[i].weapon;
-    this.textContent = this.value;
-    const index = Number(this.getAttribute('data-index'));
-    gameBoard[index].value = this.value;
-    turn++;
-    gameLogic();
-    updateTurn();
-    resetBoard();
-    }
-  }
-
-  function updateTurn () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
-    p1ScoreDom.classList.toggle('turn');
-    p2ScoreDom.classList.toggle('turn');
-  }
-
   function startTurn () {
     const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
     const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
@@ -250,117 +178,101 @@ const winCon = (() => {
     }
   }
 
-  function checkWinner (winner) {
-    if (winner.id === 'player1') {
-      scoreBoard.p1Score += 1;
-      updateScore()
-    } else if (winner.id === 'player2') {
-      scoreBoard.p2Score += 1;
-      updateScore()
-    } else {
-      updateScore();
-    }
-
-    updateRound();
-    resetBoard();
-
-    if (scoreBoard.round > 3) {
-      announceWinner();
-    }
+  function updateTurn () {
+    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
+    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
+    p1ScoreDom.classList.toggle('turn');
+    p2ScoreDom.classList.toggle('turn');
+  }
+  
+  function changeTilesStyle (a, b, c) {
+    const winnerArray = [board[a].index, board[b].index, board[c].index];
+    winnerArray.forEach(item => {
+      const winnerItem = document.querySelector(`[data-index = '${item}']`)
+      winnerItem.classList.add('win')
+    })
   }
 
-  function gameLogic () {
-    function checkRow (array) {
-      array.forEach(a => {
-        const b = a + 1;
-        const c = b + 1;
-        checkValue(a, b, c);
-      })
-    }
+  return {updateTurn, startTurn, changeTilesStyle}
+})();
 
-    function checkColumn (array) {
-      array.forEach(a => {
-        const b = a + 3;
-        const c = b + 3;
-        checkValue(a, b, c);
-      })
-    }
-    
-    function checkCross (array) {
-      array.forEach(n => {
-        const a = 4;
-        const b = a + n;
-        const c = a - n;
-        checkValue(a, b, c);
-      })
-    }
-    
-    function checkValue (a, b, c) {
-      if (gameBoard[a].value !==  '' && gameBoard[a].value === gameBoard[b].value && gameBoard[b].value === gameBoard[c].value) {
-        processValue(a, b, c);
-      } else {
-        win = false;
+//keep track of the players score
+const scoreBoard = (() => {
+  let win = false;
+  let turn = 1;
+  let round = 1;
+  let p1Score = 0;
+  let p2Score = 0;
+  return {p1Score, p2Score, round, turn, win};
+})();
+
+const playerStatus = (() => {
+  let player;
+  let nextPlayer;
+
+  return {player, nextPlayer}
+})();
+
+//Check and update the game 
+const gameBoardDom = (() => {
+  const gameBoardDom = document.querySelectorAll('.gameboard > div');
+  gameBoardDom.forEach(tiles => tiles.addEventListener('click', checkPlayerTurn));
+  
+  function checkPlayerTurn () {
+    if (Lobby.Players.length === 2) {
+      playerStatus.player = currentPlayer();
+      playerStatus.nextPlayer = checkNextPlayer()
+      console.log(playerStatus)
+      if (scoreBoard.round <= 3) {
+        if (playerStatus.player.type === 'human') {
+          humanOrBot.humanTurn.call(this, playerStatus.player)
+        } else {
+          gameBoardDom.forEach(tiles => tiles.removeEventListener('click', checkPlayerTurn));
+          humanOrBot.robotTurn(playerStatus.player);
+        }
       }
     }
-
-    function processValue (a, b, c) {
-
-      const winnerArray = [gameBoard[a].index, gameBoard[b].index, gameBoard[c].index];
-      winnerArray.forEach(item => {
-        const winnerItem = document.querySelector(`[data-index = '${item}']`)
-        winnerItem.classList.add('win')
-      })
-
-      const result = Lobby.Players.find(item => item.weapon === gameBoard[a].value);
-      win = true;
-      checkWinner(result);
+  }
+  
+  function currentPlayer () {
+    if (scoreBoard.turn % 2 === 0) {
+      return Lobby.Players[1]
+    } else {
+      return Lobby.Players[0]
     }
-
-    checkRow ([0, 3, 6]);
-    checkColumn([0, 1, 2]);
-    checkCross([4, 2]);
   }
 
-  function updateScore () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
-    p1ScoreDom.textContent = scoreBoard.p1Score;
-    p2ScoreDom.textContent = scoreBoard.p2Score;
-  }
-
-  function updateRound () {
-    const roundDom = document.querySelector('.round > span');
-    scoreBoard.round += 1;
-    if (scoreBoard.round <=3) {
-      roundDom.textContent = scoreBoard.round;
+  function checkNextPlayer () {
+    if (scoreBoard.turn % 2 === 0) {
+      return Lobby.Players[0]
+    } else {
+      return Lobby.Players[1]
     }
   }
 
   function resetBoard () {
-    const full = gameBoard.every(tiles => tiles.value !== '');
-
-    if (win === true || full === true) {
-      gameBoardDom.forEach(tiles => tiles.removeEventListener('click', startRound));
-      gameBoard.forEach(item => item.value = '');
-      if (full === true && win !== true) {
-        checkWinner('none');
-        gameBoardDom.forEach(item => item.classList.add('tie'));
-      }
-      setTimeout(() => {
-        gameBoardDom.forEach(tiles => {
-          tiles.textContent = '';
-          tiles.classList.remove('win', 'tie');
-        });
-        if (scoreBoard.round <= 3) {
-          gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
-        }
-      }, 1500)
-    }
+    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', checkPlayerTurn));
+    setTimeout(() => {
+      gameBoard.board.forEach(item => item.value = '');
+      scoreBoard.win = false;
+      gameBoardDom.forEach(tiles => {
+        tiles.textContent = '';
+        tiles.classList.remove('win', 'tie');
+        tiles.addEventListener('click', checkPlayerTurn);
+      });
+      setTimeout(checkPlayerTurn.bind(this), 900);
+    }, 1500)
   }
 
+  return {checkPlayerTurn, resetBoard, currentPlayer};
+})();
+
+//show the winner after three round
+const showWin = (() => {
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
     winner.parentElement.classList.remove('hidden');
+
     const p1 = Lobby.Players.find(player => player.id === 'player1');
     const p2 = Lobby.Players.find(player => player.id === 'player2');
 
@@ -387,39 +299,194 @@ const winCon = (() => {
     
     const restartButton = document.querySelector('.restart');
     restartButton.classList.remove('hidden');
-    restartButton.addEventListener('click', playAgain);
+    restartButton.addEventListener('click', replay.playAgain);
   }
 
+  return {announceWinner}
+})();
+
+//keep and update score
+const scoreBoardDom = (() => {
+  function updateScore () {
+    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
+    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
+    p1ScoreDom.textContent = scoreBoard.p1Score;
+    p2ScoreDom.textContent = scoreBoard.p2Score;
+  }
+
+  function updateRound () {
+    const roundDom = document.querySelector('.round > span');
+    if (scoreBoard.round <=3) {
+      roundDom.textContent = scoreBoard.round;
+    }
+  }
+
+  return {updateScore, updateRound}
+})()
+
+//check for three in a row 
+const gameLogic = (() => {
+  const boardDom = document.querySelectorAll('.gameboard > div');
+  const board = gameBoard.board;
+
+  function checkFullBoard () {
+    const full = board.every(tiles => tiles.value !== '');
+    console.log(full)
+    if (full === true && scoreBoard.win !== true) {
+      boardDom.forEach(item => item.classList.add('tie'));
+      checkWinner('none');
+    }
+  }
+
+  function checkRow (array) {
+    array.forEach(a => {
+      const b = a + 1;
+      const c = b + 1;
+      checkValue(a, b, c);
+    })
+  }
+
+  function checkColumn (array) {
+    array.forEach(a => {
+      const b = a + 3;
+      const c = b + 3;
+      checkValue(a, b, c);
+    })
+  }
+  
+  function checkCross (array) {
+    array.forEach(n => {
+      const a = 4;
+      const b = a + n;
+      const c = a - n;
+      checkValue(a, b, c);
+    })
+  }
+  
+  function checkValue (a, b, c) {
+    if (board[a].value !==  '' && board[a].value === board[b].value && board[b].value === board[c].value) {
+      currentPlayer.changeTilesStyle(a, b, c);
+      const result = Lobby.Players.find(item => item.weapon === board[a].value);
+      scoreBoard.win = true;
+      checkWinner(result);
+    }
+  }
+  
+  function checkWinner (winner) {
+    if (winner.id === 'player1') {
+      scoreBoard.p1Score += 1;
+    }
+    
+    if (winner.id === 'player2') {
+      scoreBoard.p2Score += 1;
+    }
+    
+    scoreBoardDom.updateScore()
+    if (scoreBoard.round <= 4) {
+      scoreBoard.round = scoreBoard.round + 1;
+    }
+    scoreBoardDom.updateRound()
+    gameBoardDom.resetBoard()
+    
+    console.log(scoreBoard)
+    if (scoreBoard.round > 3) {
+      setTimeout(showWin.announceWinner, 1600);
+    }
+  }
+
+  function checkBoard () {
+    checkRow ([0, 3, 6]);
+    checkColumn([0, 1, 2]);
+    checkCross([4, 2]);
+  }
+
+  return {checkBoard, checkWinner, checkFullBoard};
+})();
+
+//typeofPlayer
+const humanOrBot = (() => {
+  const boardDom = document.querySelectorAll('.gameboard > div');
+  const board = gameBoard.board;
+
+  function humanTurn (player) {
+    if (this.textContent === '') {
+      this.value = player.weapon;
+      this.textContent = this.value;
+      const index = Number(this.getAttribute('data-index'));
+      board[index].value = this.value;
+      scoreBoard.turn++;
+      gameLogic.checkBoard();
+      currentPlayer.updateTurn();
+      if (playerStatus.nextPlayer.type === 'ai') {
+        setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
+      }
+      gameLogic.checkFullBoard()
+    }
+  }
+
+  function robotTurn (player) {
+    if (scoreBoard.win !== true && board.forEach(tiles => tiles.value !== '') !== true) {
+      const emptyBoard = board.filter(board => board.value === '');
+      if (emptyBoard.length > 0) {
+        const item = emptyBoard[Math.floor((Math.random()*emptyBoard.length))];
+        const index = item.index;
+        board[index].value =  player.weapon;
+        const selectedBoard = document.querySelector(`[data-index='${index}']`)
+        selectedBoard.textContent = player.weapon;
+        scoreBoard.turn++;
+        gameLogic.checkBoard();
+        currentPlayer.updateTurn();
+        if (playerStatus.nextPlayer.type === 'ai') {
+          setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
+        } else {
+          boardDom.forEach(tiles => tiles.addEventListener('click', gameBoardDom.checkPlayerTurn));
+        }
+        gameLogic.checkFullBoard()
+      }
+    }
+  }
+
+  return {robotTurn, humanTurn};
+})();
+
+//replay or reset the game
+const replay = (() => {
+  const boardDom = document.querySelectorAll('.gameboard > div')
+
   function playAgain () {
+    const winner = document.querySelector('.winner > div');
+    winner.parentElement.classList.add('hidden');
     const restartButton = document.querySelector('.restart');
     restartButton.classList.add('hidden');
 
-    scoreBoard.round = 0;
+    scoreBoard.round = 1;
     scoreBoard.p1Score = 0;
     scoreBoard.p2Score = 0;
-
-    updateScore();
-    updateRound();
-    gameBoardDom.forEach(tiles => tiles.addEventListener('click', startRound));
+    scoreBoardDom.updateScore();
+    scoreBoardDom.updateRound();
+    if (Lobby.Players.length === 2) {
+      setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
+    }
   }
 
   function reset () {
-    turn = 1;
-    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', startRound));
+    scoreBoard.turn = 1;
+    playerStatus.player = undefined;
+    playerStatus.nextPlayer = undefined;
+    console.log(playerStatus)
     playAgain();
-    gameBoard.forEach(item => item.value = '');
-    gameBoardDom.forEach(tiles => {
+    gameBoard.board.forEach(board => board.value = '');
+    boardDom.forEach(tiles => {
           tiles.textContent = '';
           tiles.classList.remove('win', 'tie');}
     );
   }
 
-  return {startRound, startTurn, reset};
-})()
+  return {reset, playAgain}
+})();
 
-const domUpdate = (() => {
-  const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > div');
-  const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > div');
+//for label related output
+const labelDom = (() => {
   const inputDom = document.querySelectorAll('input');
 
   inputDom.forEach(dom => dom.addEventListener('input', hideLabel));
@@ -433,11 +500,40 @@ const domUpdate = (() => {
       this.previousElementSibling.classList.remove('hidden');
     }
   }
+  
+  return  {hideLabel}
+})();
 
-  function changePlayersName () {
+//Update the players name Dom
+const pNameDom = (() => {
+  let p1Name = '';
+  let p2Name = '';
+  const inputDom = document.querySelectorAll('input');
+  inputDom.forEach(dom => dom.addEventListener('input', inputName));
+
+  function inputName () {
+    const playerId = this.parentElement.getAttribute('data-id');
+
+    if (playerId === 'player1') {
+      p1Name = this.value;
+    } else {
+      p2Name = this.value;
+    }
+  }
+
+  function updateName () {
     const p1 = Lobby.Players.find(player => player.id === 'player1');
     const p2 = Lobby.Players.find(player => player.id === 'player2');
+    p1.name = p1Name;
+    p2.name = p2Name;
+    changePlayersName();
+  }
 
+  function changePlayersName () {
+    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > div');
+    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > div');
+    const p1 = Lobby.Players.find(player => player.id === 'player1');
+    const p2 = Lobby.Players.find(player => player.id === 'player2');
 
     if (p1 !== undefined) {
       if (p1.name === '') {
@@ -455,12 +551,16 @@ const domUpdate = (() => {
       }
     }
   }
-  
+ 
+  function resetName () {
+    p1Name = '';
+    p12Name = '';
+  }
+
   function clearInput () {
     inputDom.forEach(input => input.value = '');
   }
 
   clearInput();
-
-  return {changePlayersName, clearInput, hideLabel}
-})()
+  return {changePlayersName, clearInput, resetName, updateName, p1Name, p2Name}
+})();

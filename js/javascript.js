@@ -269,6 +269,8 @@ const gameBoardDom = (() => {
 
 //show the winner after three round
 const showWin = (() => {
+  const restartButton = document.querySelector('.restart');
+  restartButton.addEventListener('click', replay.playAgain);
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
     winner.parentElement.classList.remove('hidden');
@@ -296,10 +298,7 @@ const showWin = (() => {
       winner.textContent = `It's a tie!`;
       winner.parentElement.classList.add('no-win');
     }
-    
-    const restartButton = document.querySelector('.restart');
-    restartButton.classList.remove('hidden');
-    restartButton.addEventListener('click', replay.playAgain);
+    restartButton.classList.remove('hidden');   
   }
 
   return {announceWinner}
@@ -472,6 +471,8 @@ const replay = (() => {
   }
 
   function reset () {
+    boardDom.forEach(board => board.removeEventListener('click', gameBoardDom.checkPlayerTurn))
+    boardDom.forEach(board => board.addEventListener('click', gameBoardDom.checkPlayerTurn))
     scoreBoard.turn = 1;
     playerStatus.player = undefined;
     playerStatus.nextPlayer = undefined;

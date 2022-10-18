@@ -559,7 +559,7 @@ const pNameDom = (() => {
  
   function resetName () {
     p1Name = '';
-    p12Name = '';
+    p2Name = '';
   }
 
   function clearInput () {

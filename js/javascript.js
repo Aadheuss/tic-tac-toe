@@ -221,14 +221,17 @@ const gameBoardDom = (() => {
   function checkPlayerTurn () {
     if (Lobby.Players.length === 2) {
       playerStatus.player = currentPlayer();
-      playerStatus.nextPlayer = checkNextPlayer()
-      console.log(playerStatus)
+      playerStatus.nextPlayer = checkNextPlayer();
       if (scoreBoard.round <= 3) {
         if (playerStatus.player.type === 'human') {
           humanOrBot.humanTurn.call(this, playerStatus.player)
         } else {
           gameBoardDom.forEach(tiles => tiles.removeEventListener('click', checkPlayerTurn));
-          humanOrBot.robotTurn(playerStatus.player);
+          if (scoreBoard.turn === 1) {
+            setTimeout(humanOrBot.robotTurn.bind(this, playerStatus.player), 900)
+          } else {
+            humanOrBot.robotTurn(playerStatus.player);
+          }
         }
       }
     }
@@ -270,7 +273,7 @@ const gameBoardDom = (() => {
 //show the winner after three round
 const showWin = (() => {
   const restartButton = document.querySelector('.restart');
-  restartButton.addEventListener('click', replay.playAgain);
+  
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
     winner.parentElement.classList.remove('hidden');
@@ -330,7 +333,6 @@ const gameLogic = (() => {
 
   function checkFullBoard () {
     const full = board.every(tiles => tiles.value !== '');
-    console.log(full)
     if (full === true && scoreBoard.win !== true) {
       boardDom.forEach(item => item.classList.add('tie'));
       checkWinner('none');
@@ -389,7 +391,6 @@ const gameLogic = (() => {
     scoreBoardDom.updateRound()
     gameBoardDom.resetBoard()
     
-    console.log(scoreBoard)
     if (scoreBoard.round > 3) {
       setTimeout(showWin.announceWinner, 1600);
     }
@@ -452,7 +453,9 @@ const humanOrBot = (() => {
 
 //replay or reset the game
 const replay = (() => {
-  const boardDom = document.querySelectorAll('.gameboard > div')
+  const boardDom = document.querySelectorAll('.gameboard > div');
+  const restartButton = document.querySelector('.restart');
+  restartButton.addEventListener('click', playAgain);
 
   function playAgain () {
     const winner = document.querySelector('.winner > div');
@@ -476,7 +479,6 @@ const replay = (() => {
     scoreBoard.turn = 1;
     playerStatus.player = undefined;
     playerStatus.nextPlayer = undefined;
-    console.log(playerStatus)
     playAgain();
     gameBoard.board.forEach(board => board.value = '');
     boardDom.forEach(tiles => {

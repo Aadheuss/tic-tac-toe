@@ -1,6 +1,6 @@
-//Check the current state of the lobby
-const Lobby = (() => {
-  const Players = [];
+//Check the current state of the game in the lobby
+const Lobby = (function() {
+  const players = [];
   const game = document.querySelector('.game');
   const playerContainer = document.querySelector('.player-container');
   const winnerExitBtn = document.querySelector('.winner > button');
@@ -9,7 +9,7 @@ const Lobby = (() => {
   winnerExitBtn.addEventListener('click', toggleHidden.bind(winnerExitBtn, winnerExitBtn.parentElement));
 
   function checkState () { 
-    if (Players.length === 2) {
+    if (players.length === 2) {
       startButton.classList.remove('hidden');
       currentPlayer.startTurn();
       startButton.addEventListener('click', startGame);
@@ -33,8 +33,8 @@ const Lobby = (() => {
     toggleHidden(game);
     toggleHidden(playerContainer);
     //delete players
-    for (let i = 0; i <= Players.length; i++) {
-      Players.pop();
+    for (let i = 0; i <= players.length; i++) {
+      players.pop();
     }
 
     toggleHidden(startButton);
@@ -46,7 +46,7 @@ const Lobby = (() => {
     winnerExitBtn.parentElement.classList.add('hidden');
     pNameDom.clearInput();
     document.querySelectorAll('input').forEach(input => input.previousElementSibling.classList.remove('hidden'))
-    Lobby.Players.forEach(player => player.name = '');
+    Lobby.players.forEach(player => player.name = '');
     resetType();
     pNameDom.resetName();
     replay.reset();
@@ -64,11 +64,11 @@ const Lobby = (() => {
       })
   }
 
-  return {Players, checkState};
+  return {players, checkState};
 })();
 
 //check, edit, and add players
-const playersReady = (() => {
+const playersReady = (function() {
   const player = (id, type, weapon, name) => {
     return {id, type, weapon, name};
   }
@@ -80,7 +80,7 @@ const playersReady = (() => {
     const value = this.parentElement.parentElement.getAttribute('data-id');
     const playerTList = document.querySelectorAll(`[data-id="${value}"] .type > div`);
 
-    if (Lobby.Players.find(player => (player.id === value)) === undefined) {
+    if (Lobby.players.find(player => (player.id === value)) === undefined) {
       let name;
       if (value === 'player1') {
         name = pNameDom.p1Name
@@ -100,7 +100,7 @@ const playersReady = (() => {
 
   function selectWeapon () {
     let weapon;
-    if (Lobby.Players.length === 0) {
+    if (Lobby.players.length === 0) {
       weapon = 'O';
     } else {
       weapon = 'X';
@@ -115,20 +115,20 @@ const playersReady = (() => {
   }
 
   function pushPlayer (value) {
-    Lobby.Players.push(value);
+    Lobby.players.push(value);
   }
 
   function toggleType (value) {
-    const i = Lobby.Players.findIndex(player => player.id === value);
+    const i = Lobby.players.findIndex(player => player.id === value);
     this.classList.add('selected');
 
     if (this.textContent === 'Human') {
-      Lobby.Players[i].type = 'human';
+      Lobby.players[i].type = 'human';
       this.nextElementSibling.classList.remove('selected');
       this.parentElement.parentElement.parentElement.classList.remove('ai');
       this.parentElement.parentElement.parentElement.classList.add('human');
     } else {
-      Lobby.Players[i].type = 'ai';
+      Lobby.players[i].type = 'ai';
       this.previousElementSibling.classList.remove('selected');
       this.parentElement.parentElement.parentElement.classList.remove('human');
       this.parentElement.parentElement.parentElement.classList.add('ai');
@@ -137,7 +137,7 @@ const playersReady = (() => {
 })();
 
 //make gameboard for players to play on
-const gameBoard = (() => {
+const gameBoard = (function () {
   const domElements = document.querySelector('.gameboard');
   const board = [];
 
@@ -162,14 +162,14 @@ const gameBoard = (() => {
 })();
 
 //highlight the current player
-const currentPlayer = (() => {
+const currentPlayer = (function() {
   const board = gameBoard.board;
   
   function startTurn () {
     const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
     const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
 
-    if (Lobby.Players[0].id === 'player1') {
+    if (Lobby.players[0].id === 'player1') {
     p1ScoreDom.classList.add('turn');
     p2ScoreDom.classList.remove('turn')
     } else {
@@ -197,7 +197,7 @@ const currentPlayer = (() => {
 })();
 
 //keep track of the players score
-const scoreBoard = (() => {
+const scoreBoard = (function () {
   let win = false;
   let turn = 1;
   let round = 1;
@@ -206,7 +206,7 @@ const scoreBoard = (() => {
   return {p1Score, p2Score, round, turn, win};
 })();
 
-const playerStatus = (() => {
+const playerStatus = (function() {
   let player;
   let nextPlayer;
 
@@ -214,12 +214,12 @@ const playerStatus = (() => {
 })();
 
 //Check and update the game 
-const gameBoardDom = (() => {
+const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
   gameBoardDom.forEach(tiles => tiles.addEventListener('click', checkPlayerTurn));
   
   function checkPlayerTurn () {
-    if (Lobby.Players.length === 2) {
+    if (Lobby.players.length === 2) {
       playerStatus.player = currentPlayer();
       playerStatus.nextPlayer = checkNextPlayer();
       if (scoreBoard.round <= 3) {
@@ -239,17 +239,17 @@ const gameBoardDom = (() => {
   
   function currentPlayer () {
     if (scoreBoard.turn % 2 === 0) {
-      return Lobby.Players[1]
+      return Lobby.players[1]
     } else {
-      return Lobby.Players[0]
+      return Lobby.players[0]
     }
   }
 
   function checkNextPlayer () {
     if (scoreBoard.turn % 2 === 0) {
-      return Lobby.Players[0]
+      return Lobby.players[0]
     } else {
-      return Lobby.Players[1]
+      return Lobby.players[1]
     }
   }
 
@@ -271,15 +271,15 @@ const gameBoardDom = (() => {
 })();
 
 //show the winner after three round
-const showWin = (() => {
+const showWin = (function() {
   const restartButton = document.querySelector('.restart');
   
   function announceWinner () {
     const winner = document.querySelector('.winner > div');
     winner.parentElement.classList.remove('hidden');
 
-    const p1 = Lobby.Players.find(player => player.id === 'player1');
-    const p2 = Lobby.Players.find(player => player.id === 'player2');
+    const p1 = Lobby.players.find(player => player.id === 'player1');
+    const p2 = Lobby.players.find(player => player.id === 'player2');
 
     if (scoreBoard.p1Score > scoreBoard.p2Score) {
       if (p1.name !== '') {
@@ -308,7 +308,7 @@ const showWin = (() => {
 })();
 
 //keep and update score
-const scoreBoardDom = (() => {
+const scoreBoardDom = (function() {
   function updateScore () {
     const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
     const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
@@ -327,7 +327,7 @@ const scoreBoardDom = (() => {
 })()
 
 //check for three in a row 
-const gameLogic = (() => {
+const gameLogic = (function() {
   const boardDom = document.querySelectorAll('.gameboard > div');
   const board = gameBoard.board;
 
@@ -368,7 +368,7 @@ const gameLogic = (() => {
     if (board[a].value !==  '' && board[a].value === board[b].value && board[b].value === board[c].value) {
       if (scoreBoard.win !== true) {
         currentPlayer.changeTilesStyle(a, b, c);
-        const result = Lobby.Players.find(item => item.weapon === board[a].value);
+        const result = Lobby.players.find(item => item.weapon === board[a].value);
         scoreBoard.win = true;
         checkWinner(result);
       }
@@ -406,7 +406,7 @@ const gameLogic = (() => {
 })();
 
 //typeofPlayer
-const humanOrBot = (() => {
+const humanOrBot = (function() {
   const boardDom = document.querySelectorAll('.gameboard > div');
   const board = gameBoard.board;
 
@@ -452,7 +452,7 @@ const humanOrBot = (() => {
 })();
 
 //replay or reset the game
-const replay = (() => {
+const replay = (function() {
   const boardDom = document.querySelectorAll('.gameboard > div');
   const restartButton = document.querySelector('.restart');
   restartButton.addEventListener('click', playAgain);
@@ -468,7 +468,7 @@ const replay = (() => {
     scoreBoard.p2Score = 0;
     scoreBoardDom.updateScore();
     scoreBoardDom.updateRound();
-    if (Lobby.Players.length === 2) {
+    if (Lobby.players.length === 2) {
       setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
     }
   }
@@ -491,7 +491,7 @@ const replay = (() => {
 })();
 
 //for label related output
-const labelDom = (() => {
+const labelDom = (function() {
   const inputDom = document.querySelectorAll('input');
 
   inputDom.forEach(dom => dom.addEventListener('input', hideLabel));
@@ -510,7 +510,7 @@ const labelDom = (() => {
 })();
 
 //Update the players name Dom
-const pNameDom = (() => {
+const pNameDom = (function() {
   let p1Name = '';
   let p2Name = '';
   const inputDom = document.querySelectorAll('input');
@@ -527,8 +527,8 @@ const pNameDom = (() => {
   }
 
   function updateName () {
-    const p1 = Lobby.Players.find(player => player.id === 'player1');
-    const p2 = Lobby.Players.find(player => player.id === 'player2');
+    const p1 = Lobby.players.find(player => player.id === 'player1');
+    const p2 = Lobby.players.find(player => player.id === 'player2');
     p1.name = p1Name;
     p2.name = p2Name;
     changePlayersName();
@@ -537,8 +537,8 @@ const pNameDom = (() => {
   function changePlayersName () {
     const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > div');
     const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > div');
-    const p1 = Lobby.Players.find(player => player.id === 'player1');
-    const p2 = Lobby.Players.find(player => player.id === 'player2');
+    const p1 = Lobby.players.find(player => player.id === 'player1');
+    const p2 = Lobby.players.find(player => player.id === 'player2');
 
     if (p1 !== undefined) {
       if (p1.name === '') {

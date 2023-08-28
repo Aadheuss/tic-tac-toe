@@ -28,6 +28,7 @@ const events = {
 //lobby check all the necessary elements for players to initiate the game
 const lobby = (function() {
   const players = [];
+  const lobbyContainer = document.querySelector('.lobby');
   const _playersInfoContainer = document.querySelector('.players-container');
   const _startGameBtn = document.querySelector('.start');
   const _winnerExitBtn = document.querySelector('.winner > button');
@@ -35,6 +36,7 @@ const lobby = (function() {
   const _playerTypeList = document.querySelectorAll('.type > div');
 
   _playerTypeList.forEach(obj => obj.addEventListener('click', _selectPlayerType));
+  _startGameBtn.addEventListener('click', _startGame);
 
   const _Player = (id, type, weapon, name) => {
     let _weapon = weapon;
@@ -63,13 +65,14 @@ const lobby = (function() {
   players.push(_Player('player2', null, 'X', 'player2'));
   
   //Listen to the events
-  events.on('playerIsChanged', _startGame);
+  events.on('playerIsChanged', _checkState);
   events.on('gameIsReady', _showElement);
   events.on('renderChange', _renderType);
   events.on('nameChanged', _updateName);
+  events.on('startGame', _closeLobby);
 
   //if both players already have a type show the start game button
-  function _startGame (players) { 
+  function _checkState (players) { 
     console.log(players[0].getType())
     let isReady = players.every(player => player.getType() !== null);
     if (isReady) {
@@ -98,14 +101,13 @@ const lobby = (function() {
     el.classList.remove('hidden');
   }
 
-  function _updatePlayersInfo(players) {
-    events.on('playerIsChanged');
-  }
-
-  //open the game board
-  function _openGameBoard() {
+  function _startGame() {
+    events.emit('startGame', players);
   }
   
+  function _closeLobby() {
+    lobbyContainer.classList.add('hidden');
+  }
   //style the selected type container button and its container
   function _renderType(e) {
     const typeSelections = Array.from(e.target.parentElement.children);
@@ -123,8 +125,11 @@ const lobby = (function() {
 
 //Update the players name on the DOM and update the events on pubSub
 const playersNameDom = (function() {
+  const playersName = document.querySelector('.scoreboard');
   const inputDom = document.querySelectorAll('input');
   inputDom.forEach(dom => dom.addEventListener('input', inputName));
+
+  events.on('startGame', _renderName);
 
   function inputName (e) {
     const playerName = e.target.value;
@@ -133,6 +138,12 @@ const playersNameDom = (function() {
   }
 
   function _renderName(players) {
+    console.log(players);
+    players.forEach(player => {
+      const name = player.getName();
+      const playerScoreName = document.querySelector(`[data-score='${player.getId()}']`);
+      playerScoreName.textContent = name;
+    })
   }
  
   function resetName() {
@@ -174,6 +185,17 @@ const gameBoard = (function () {
   return {board};
 })();
 
+const gameArea = (function() {
+  const gameArea = document.querySelector('.game-area');
+  
+  events.on('startGame', _showDom)
+
+  function _showDom() {
+    gameArea.classList.remove('hidden');
+  }
+
+})();
+
 //Check and update the game 
 const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
@@ -189,7 +211,6 @@ const gameBoardDom = (function() {
   //reset the game board and remove all value
   function _resetBoard () {
   }
-
   return {};
 })();
 

@@ -387,7 +387,7 @@ h1 {
 
 /*flex */
 h1,
-.player-container,
+.players-container,
 .player,
 .player > div:first-child,
 .player > div:last-child {
@@ -395,7 +395,7 @@ h1,
 }
 
 .gameboard,
-.player-container {
+.players-container {
   justify-content: center;
 }
 
@@ -479,28 +479,28 @@ h1,
   padding: 4rem 1.5rem;
 }
 
-.player-container {
+.players-container {
   justify-content: center;
   align-items: center;
   gap: min(4rem, 5vw);
   text-align: center;
 }
 
-.player-container > div:not(:nth-child(2)) {
+.players-container > div:not(:nth-child(2)) {
   background-image: linear-gradient(to bottom,#d7dde8, var(--white-color));
   border: var(--black-color) solid 2px;
   padding: 1rem;
 }
 
-.player-container > div[class='human'] {
+.players-container > div[class='human'] {
   background-image: linear-gradient(to left, #2f80ed, #56ccf2);
 }
 
-.player-container > div[class='ai'] {
+.players-container > div[class='ai'] {
   background-image: linear-gradient(to top, #757f9a , #d7dde8);
 }
 
-.player-container > div:nth-child(2) {
+.players-container > div:nth-child(2) {
   font-weight: 100;
   font-size: 5rem;
 }
@@ -709,7 +709,7 @@ button {
 
 /*Media query selector */
 @media screen and (max-width: 720px) {
-  .player-container {
+  .players-container {
     flex-direction: column;
   }
 

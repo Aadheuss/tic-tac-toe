@@ -1,139 +1,111 @@
+//Use pubSub to check for events
+const events = {
+  events: {},
+  on: function (eventName, fn) {
+    this.events[eventName] = this.events[eventName] || [];
+    this.events[eventName].push(fn);
+  },
+  off: function(eventName, fn) {
+    if (this.events[eventName]) {
+      for (var i = 0; i < this.events[eventName].length; i++) {
+        if (this.events[eventName][i] === fn) {
+          this.events[eventName].splice(i, 1);
+          break;
+        }
+      };
+    }
+  },
+  emit: function (eventName, data) {
+    if (this.events[eventName]) {
+      this.events[eventName].forEach(function(fn) {
+        fn(data);
+      });
+    }
+  }
+};
+
 //Check the current state of the game in the lobby
-const Lobby = (function() {
+//lobby check all the necessary elements for players to initiate the game
+const lobby = (function() {
   const players = [];
-  const game = document.querySelector('.game');
-  const playerContainer = document.querySelector('.player-container');
-  const winnerExitBtn = document.querySelector('.winner > button');
-  const startButton = document.querySelector('.start');
-  
-  winnerExitBtn.addEventListener('click', toggleHidden.bind(winnerExitBtn, winnerExitBtn.parentElement));
+  const _gameArea = document.querySelector('.game-area');
+  const _playersInfoContainer = document.querySelector('.players-container');
+  const _startGameBtn = document.querySelector('.start');
+  const _winnerExitBtn = document.querySelector('.winner > button');
+  const _returnBtn = document.querySelector('.return');
+  const _playerTypeList = document.querySelectorAll('.type > div');
 
-  function checkState () { 
-    if (players.length === 2) {
-      startButton.classList.remove('hidden');
-      currentPlayer.startTurn();
-      startButton.addEventListener('click', startGame);
+  _playerTypeList.forEach(obj => obj.addEventListener('click', _selectPlayerType));
+
+  const _player = (id, type, weapon, name) => {
+    let _weapon = weapon;
+    let _name = name;
+    let _id = id;
+    let _type = type;
+    
+    const getType = () => _type;
+    const getId = () => _id;
+
+    const changeType = (type) => {
+      _type = type;
+    }
+    
+    const showInfo = () => {_id, _name, _weapon, _type};
+    return {changeType, getType, getId, showInfo};
+  }
+
+  //create two players
+  players.push(_player('p1', null, 'O', 'player1'));
+  players.push(_player('p2', null, 'X', 'player2'));
+  
+  //Listen to the events
+  events.on('playerIsChanged', _startGame);
+  events.on('gameIsReady', _showElement);
+  events.on('renderChange', _renderType)
+
+  //if both players already have a type show the start game button
+  function _startGame (players) { 
+    console.log(players[0].getType())
+    let isReady = players.every(player => player.getType() !== null);
+    if (isReady) {
+      events.emit('gameIsReady', _startGameBtn);
     }
   }
 
-  function startGame() {
-    exitButton.addEventListener('click', exitGame);
-    startButton.removeEventListener('click', startGame);
-    toggleHidden(game);
-    toggleHidden(playerContainer);
-    pNameDom.updateName();
-    gameBoardDom.checkPlayerTurn();
-  }
-  
-
-  const exitButton = document.querySelector('.return');
-  function exitGame () {
-    exitButton.removeEventListener('click', exitGame);
-    startButton.addEventListener('click', startGame);
-    toggleHidden(game);
-    toggleHidden(playerContainer);
-    //delete players
-    for (let i = 0; i <= players.length; i++) {
-      players.pop();
-    }
-
-    toggleHidden(startButton);
-    const playerSelection = document.querySelectorAll('.selected')
-    if (playerSelection !== null) {
-      playerSelection.forEach(item => item.classList.remove('selected'));
-    }
-
-    winnerExitBtn.parentElement.classList.add('hidden');
-    pNameDom.clearInput();
-    document.querySelectorAll('input').forEach(input => input.previousElementSibling.classList.remove('hidden'))
-    Lobby.players.forEach(player => player.name = '');
-    resetType();
-    pNameDom.resetName();
-    replay.reset();
-  }
-  
-  function toggleHidden (value) {
-    value.classList.toggle('hidden')
+  function _selectPlayerType(e) {
+    const playerId = e.target.parentElement.getAttribute('data-id');
+    const playerType = e.target.textContent.toLowerCase();
+    const player = players.find(player => player.getId() === playerId);
+    player.changeType(playerType);
+    events.emit('playerIsChanged', players);
+    events.emit('renderChange', e);
   }
   
-  function resetType () {
-    const playerContainer = document.querySelectorAll('.player-container > div:not(:nth-child(2))')
-    playerContainer.forEach(player => {
-      player.classList.remove('human');
-      player.classList.remove('ai');
-      })
+  function _showElement(el) {
+    el.classList.remove('hidden');
   }
 
-  return {players, checkState};
-})();
-
-//check, edit, and add players
-const playersReady = (function() {
-  const player = (id, type, weapon, name) => {
-    return {id, type, weapon, name};
+  function _updatePlayersInfo(players) {
+    events.on('playerIsChanged');
   }
 
-  const typeList = document.querySelectorAll('.type > div');
-  typeList.forEach(type => type.addEventListener('click', addPlayer));
+  //open the game board
+  function _openGameBoard() {
+  }
+  
+  //style the selected type container button and its container
+  function _renderType(e) {
+    const typeSelections = Array.from(e.target.parentElement.children);
+    const selectedType = e.target;
+    const selectedContainer = selectedType.parentElement.parentElement.parentElement;
 
-  function addPlayer () {
-    const value = this.parentElement.parentElement.getAttribute('data-id');
-    const playerTList = document.querySelectorAll(`[data-id="${value}"] .type > div`);
-
-    if (Lobby.players.find(player => (player.id === value)) === undefined) {
-      let name;
-      if (value === 'player1') {
-        name = pNameDom.p1Name
-      } else {
-        name = pNameDom.p2Name;
-      }
-
-      const type = selectType(this);
-      const weapon = selectWeapon();
-      const playerName = player(value, type, weapon, name);
-      pushPlayer(playerName);
-      toggleType.call(this, value);
-      playerTList.forEach(type => type.addEventListener('click', toggleType.bind(type, value)));
-    }
-    Lobby.checkState()
+    selectedContainer.classList.remove('human', 'ai');
+    typeSelections.forEach(type => type.classList.remove('selected'));
+    selectedType.classList.add('selected');
+    selectedContainer.classList.add(`${selectedType.textContent.toLowerCase()}`)
   }
 
-  function selectWeapon () {
-    let weapon;
-    if (Lobby.players.length === 0) {
-      weapon = 'O';
-    } else {
-      weapon = 'X';
-    }
-    return weapon;
-  }
-
-  function selectType (value) {
-    value.classList.add('selected');
-    const type = value.textContent;
-    return type;
-  }
-
-  function pushPlayer (value) {
-    Lobby.players.push(value);
-  }
-
-  function toggleType (value) {
-    const i = Lobby.players.findIndex(player => player.id === value);
-    this.classList.add('selected');
-
-    if (this.textContent === 'Human') {
-      Lobby.players[i].type = 'human';
-      this.nextElementSibling.classList.remove('selected');
-      this.parentElement.parentElement.parentElement.classList.remove('ai');
-      this.parentElement.parentElement.parentElement.classList.add('human');
-    } else {
-      Lobby.players[i].type = 'ai';
-      this.previousElementSibling.classList.remove('selected');
-      this.parentElement.parentElement.parentElement.classList.remove('human');
-      this.parentElement.parentElement.parentElement.classList.add('ai');
-    }
-  }
+  return {players};
 })();
 
 //make gameboard for players to play on
@@ -164,7 +136,7 @@ const gameBoard = (function () {
 //highlight the current player
 const currentPlayer = (function() {
   const board = gameBoard.board;
-  
+
   function startTurn () {
     const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
     const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');

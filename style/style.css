@@ -415,7 +415,7 @@ h1,
   width: 100vw;
 }
 
-.game {
+.game-area {
   height: 100vh;
   font-weight: 500;
   display: flex;

@@ -430,6 +430,8 @@ h1,
 }
 
 .scoreboard {
+  border-top: 1px solid var(--white-color);
+  border-left: 1px solid var(--white-color);
   justify-content: space-between;
   width: 300px;
   background-color: var(--black-color);

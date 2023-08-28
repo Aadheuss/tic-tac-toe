@@ -479,13 +479,11 @@ h1,
 
 /* lobby screen selector*/
 .lobby {
+  grid-template-rows: min-content;
   background-color: var(--black-color);
-  min-height: calc(100vh - var(--main-title));
+  min-height: 100vh;
   position: relative;
-  place-items: center;
-  gap: 3rem;
   font-size: 1.15rem;
-  padding: 4rem 1.5rem;
 }
 
 .players-container {

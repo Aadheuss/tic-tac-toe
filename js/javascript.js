@@ -28,7 +28,6 @@ const events = {
 //lobby check all the necessary elements for players to initiate the game
 const lobby = (function() {
   const players = [];
-  const _gameArea = document.querySelector('.game-area');
   const _playersInfoContainer = document.querySelector('.players-container');
   const _startGameBtn = document.querySelector('.start');
   const _winnerExitBtn = document.querySelector('.winner > button');
@@ -45,23 +44,29 @@ const lobby = (function() {
     
     const getType = () => _type;
     const getId = () => _id;
+    const getName = () => _name;
 
     const changeType = (type) => {
       _type = type;
-    }
+    };
     
+    const changeName = (name) => {
+      _name = name;
+    };
+
     const showInfo = () => {_id, _name, _weapon, _type};
-    return {changeType, getType, getId, showInfo};
+    return {changeType, changeName, getName, getType, getId, showInfo};
   }
 
   //create two players
-  players.push(_Player('p1', null, 'O', 'player1'));
-  players.push(_Player('p2', null, 'X', 'player2'));
+  players.push(_Player('player1', null, 'O', 'player1'));
+  players.push(_Player('player2', null, 'X', 'player2'));
   
   //Listen to the events
   events.on('playerIsChanged', _startGame);
   events.on('gameIsReady', _showElement);
-  events.on('renderChange', _renderType)
+  events.on('renderChange', _renderType);
+  events.on('nameChanged', _updateName);
 
   //if both players already have a type show the start game button
   function _startGame (players) { 
@@ -81,6 +86,14 @@ const lobby = (function() {
     events.emit('renderChange', e);
   }
   
+  //update player name to the array players every time an event occurs
+  function _updateName(info) {
+    let playerId = info.id;
+    let playerName = info.name;
+    let player = players.find(player => player.getId() === playerId)
+    player.changeName(playerName);
+  }
+
   function _showElement(el) {
     el.classList.remove('hidden');
   }
@@ -106,6 +119,30 @@ const lobby = (function() {
   }
 
   return {players};
+})();
+
+//Update the players name on the DOM and update the events on pubSub
+const playersNameDom = (function() {
+  const inputDom = document.querySelectorAll('input');
+  inputDom.forEach(dom => dom.addEventListener('input', inputName));
+
+  function inputName (e) {
+    const playerName = e.target.value;
+    const playerId = this.parentElement.getAttribute('data-id').toLowerCase();
+    events.emit('nameChanged', {id: playerId, name: playerName});
+  }
+
+  function _renderName(players) {
+  }
+ 
+  function resetName() {
+    p1Name = '';
+    p2Name = '';
+  }
+
+  function clearInput() {
+    inputDom.forEach(input => input.value = '');
+  }
 })();
 
 //create game board for player to play on
@@ -137,28 +174,34 @@ const gameBoard = (function () {
   return {board};
 })();
 
-//highlight the current player
-const currentPlayer = (function() {
-  const board = gameBoard.board;
-
-  function startTurn () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
-
-    if (Lobby.players[0].id === 'player1') {
-    p1ScoreDom.classList.add('turn');
-    p2ScoreDom.classList.remove('turn')
-    } else {
-    p2ScoreDom.classList.add('turn');
-    p1ScoreDom.classList.remove('turn');
-    }
+//Check and update the game 
+const gameBoardDom = (function() {
+  const gameBoardDom = document.querySelectorAll('.gameboard > div');
+  gameBoardDom.forEach(tiles => tiles.addEventListener('click', _checkPlayerTurn));
+    
+  function _checkPlayerTurn() {
+  }
+  
+  function _currentPlayer(player) {
+    let currentPlayer = player;
   }
 
-  function updateTurn () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child');
-    p1ScoreDom.classList.toggle('turn');
-    p2ScoreDom.classList.toggle('turn');
+  //reset the game board and remove all value
+  function _resetBoard () {
+  }
+
+  return {};
+})();
+
+//highlight the current player
+const currentPlayer = (function() {
+  //scoreboard to keep score on the dom
+  const _scoreDom = document.querySelector('.scoreboard');
+
+  function _startTurn (player) {
+    const playerId = player.getId();
+    const playerEl = _scoreDom.children.getAttribute(`${playerId}`)
+    playerEl.classList.add('turn');
   }
   
   function changeTilesStyle (a, b, c) {
@@ -169,17 +212,7 @@ const currentPlayer = (function() {
     })
   }
 
-  return {updateTurn, startTurn, changeTilesStyle}
-})();
-
-//keep track of the players score
-const scoreBoard = (function () {
-  let win = false;
-  let turn = 1;
-  let round = 1;
-  let p1Score = 0;
-  let p2Score = 0;
-  return {p1Score, p2Score, round, turn, win};
+  return {changeTilesStyle}
 })();
 
 const playerStatus = (function() {
@@ -187,63 +220,6 @@ const playerStatus = (function() {
   let nextPlayer;
 
   return {player, nextPlayer}
-})();
-
-//Check and update the game 
-const gameBoardDom = (function() {
-  const gameBoardDom = document.querySelectorAll('.gameboard > div');
-  gameBoardDom.forEach(tiles => tiles.addEventListener('click', checkPlayerTurn));
-  
-  function checkPlayerTurn () {
-    if (Lobby.players.length === 2) {
-      playerStatus.player = currentPlayer();
-      playerStatus.nextPlayer = checkNextPlayer();
-      if (scoreBoard.round <= 3) {
-        if (playerStatus.player.type === 'human') {
-          humanOrBot.humanTurn.call(this, playerStatus.player)
-        } else {
-          gameBoardDom.forEach(tiles => tiles.removeEventListener('click', checkPlayerTurn));
-          if (scoreBoard.turn === 1) {
-            setTimeout(humanOrBot.robotTurn.bind(this, playerStatus.player), 900)
-          } else {
-            humanOrBot.robotTurn(playerStatus.player);
-          }
-        }
-      }
-    }
-  }
-  
-  function currentPlayer () {
-    if (scoreBoard.turn % 2 === 0) {
-      return Lobby.players[1]
-    } else {
-      return Lobby.players[0]
-    }
-  }
-
-  function checkNextPlayer () {
-    if (scoreBoard.turn % 2 === 0) {
-      return Lobby.players[0]
-    } else {
-      return Lobby.players[1]
-    }
-  }
-
-  function resetBoard () {
-    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', checkPlayerTurn));
-    setTimeout(() => {
-      gameBoard.board.forEach(item => item.value = '');
-      scoreBoard.win = false;
-      gameBoardDom.forEach(tiles => {
-        tiles.textContent = '';
-        tiles.classList.remove('win', 'tie');
-        tiles.addEventListener('click', checkPlayerTurn);
-      });
-      setTimeout(checkPlayerTurn.bind(this), 900);
-    }, 1500)
-  }
-
-  return {checkPlayerTurn, resetBoard, currentPlayer};
 })();
 
 //show the winner after three round
@@ -285,21 +261,30 @@ const showWin = (function() {
 
 //keep and update score
 const scoreBoardDom = (function() {
-  function updateScore () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
+  const _p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
+  const _p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
+  const _roundDom = document.querySelector('.round > span');
+
+  //keep track of the players score
+  const scoreBoard = (function () {
+    let win = false;
+    let turn = 1;
+    let round = 1;
+    let p1Score = 0;
+    let p2Score = 0;
+    return {p1Score, p2Score, round, turn, win};
+  })();
+
+  //update score to the dom
+  function _updateScore () {
     p1ScoreDom.textContent = scoreBoard.p1Score;
     p2ScoreDom.textContent = scoreBoard.p2Score;
   }
 
-  function updateRound () {
-    const roundDom = document.querySelector('.round > span');
-    if (scoreBoard.round <=3) {
+  //update round count to the dom
+  function _updateRound () {
       roundDom.textContent = scoreBoard.round;
-    }
   }
-
-  return {updateScore, updateRound}
 })()
 
 //check for three in a row 
@@ -483,65 +468,4 @@ const labelDom = (function() {
   }
   
   return  {hideLabel}
-})();
-
-//Update the players name Dom
-const pNameDom = (function() {
-  let p1Name = '';
-  let p2Name = '';
-  const inputDom = document.querySelectorAll('input');
-  inputDom.forEach(dom => dom.addEventListener('input', inputName));
-
-  function inputName () {
-    const playerId = this.parentElement.getAttribute('data-id');
-
-    if (playerId === 'player1') {
-      p1Name = this.value;
-    } else {
-      p2Name = this.value;
-    }
-  }
-
-  function updateName () {
-    const p1 = Lobby.players.find(player => player.id === 'player1');
-    const p2 = Lobby.players.find(player => player.id === 'player2');
-    p1.name = p1Name;
-    p2.name = p2Name;
-    changePlayersName();
-  }
-
-  function changePlayersName () {
-    const p1ScoreDom = document.querySelector('.scoreboard > div:first-child > div');
-    const p2ScoreDom = document.querySelector('.scoreboard > div:last-child > div');
-    const p1 = Lobby.players.find(player => player.id === 'player1');
-    const p2 = Lobby.players.find(player => player.id === 'player2');
-
-    if (p1 !== undefined) {
-      if (p1.name === '') {
-        p1ScoreDom.textContent = 'player1:'
-      } else {
-        p1ScoreDom.textContent = `${p1.name}:`;
-      }
-    }
-    
-    if (p2 !== undefined) {
-      if (p2.name === '') {
-        p2ScoreDom.textContent = 'player2:'
-      } else {
-        p2ScoreDom.textContent = `${p2.name}:`;
-      }
-    }
-  }
- 
-  function resetName () {
-    p1Name = '';
-    p2Name = '';
-  }
-
-  function clearInput () {
-    inputDom.forEach(input => input.value = '');
-  }
-
-  clearInput();
-  return {changePlayersName, clearInput, resetName, updateName, p1Name, p2Name}
 })();

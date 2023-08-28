@@ -376,8 +376,8 @@ body {
 
 h1 {
   color: var(--white-color);
-  box-shadow: 10px 5px var(--yellow);
-  background-color: var(--yellow);
+  text-shadow: 0 5px var(--yellow);
+  background-color: var(--black-color);
   padding: var(--h1-pad);
   margin: 0;
   border-bottom: solid 1px black;
@@ -497,7 +497,10 @@ h1,
 
 .players-container > div:not(:nth-child(2)) {
   background-image: linear-gradient(to bottom,#d7dde8, var(--white-color));
-  border: var(--black-color) solid 2px;
+  box-shadow: 5px 5px var(--yellow);
+  border-bottom: black 1px solid;
+  border-right: black 1px solid;
+  border-radius: 3px;;
   padding: 1rem;
 }
 
@@ -567,9 +570,11 @@ h1,
 }
 
 .start {
-  background-color: var(--black-color);
   color: var(--white-color);
   padding: 0.5em 1em;
+  border: 1px solid var(--yellow);
+  border-radius: 3px;
+  box-shadow: 0 5px var(--white-color);
   font-weight: 700;
 }
 

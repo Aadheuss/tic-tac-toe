@@ -37,7 +37,7 @@ const lobby = (function() {
 
   _playerTypeList.forEach(obj => obj.addEventListener('click', _selectPlayerType));
 
-  const _player = (id, type, weapon, name) => {
+  const _Player = (id, type, weapon, name) => {
     let _weapon = weapon;
     let _name = name;
     let _id = id;
@@ -55,8 +55,8 @@ const lobby = (function() {
   }
 
   //create two players
-  players.push(_player('p1', null, 'O', 'player1'));
-  players.push(_player('p2', null, 'X', 'player2'));
+  players.push(_Player('p1', null, 'O', 'player1'));
+  players.push(_Player('p2', null, 'X', 'player2'));
   
   //Listen to the events
   events.on('playerIsChanged', _startGame);
@@ -108,23 +108,27 @@ const lobby = (function() {
   return {players};
 })();
 
-//make gameboard for players to play on
+//create game board for player to play on
 const gameBoard = (function () {
   const domElements = document.querySelector('.gameboard');
   const board = [];
 
-  function tiles (index, value) {
+  function _tiles (index, value) {
     return {index, value};
   }
 
-  for (let i = 0; i < 9; i++) {
-    const obj = tiles(i, '');
-    board.push(obj);
+  //create game board with n number of tiles
+  function _createBoard(n) {
+    for (let i = 0; i < n; i++) {
+      const obj = _tiles(i, '');
+      board.push(obj);
+    }
   }
   
-  board.forEach(tiles => render.call(tiles, domElements, 'div'));
+  _createBoard(9);
+  board.forEach(tiles => _render.call(tiles, domElements, 'div'));
  
-  function render (container, type) {
+  function _render (container, type) {
     const item = document.createElement(type);
     item.setAttribute('data-index', `${this.index}`);
     container.appendChild(item)

@@ -58,7 +58,7 @@ const lobby = (function() {
     const showInfo = () => {
       return {_id, _name, _weapon, _type}
     };
-    
+
     return {changeType, changeName, getName, getType, getId, showInfo};
   }
 
@@ -139,6 +139,7 @@ const playersNameDom = (function() {
 
   events.on('startGame', _renderName);
   events.on('returnToLobby', _resetName);
+  events.on('returnToLobby', _clearNameInput)
 
   function inputName (e) {
     const playerName = e.target.value;
@@ -163,7 +164,7 @@ const playersNameDom = (function() {
     });
   }
 
-  function clearInput() {
+  function _clearNameInput() {
     inputDom.forEach(input => input.value = '');
   }
 })();

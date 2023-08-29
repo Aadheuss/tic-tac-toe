@@ -194,6 +194,7 @@ const gameBoard = (function () {
 
   events.on('boardChanged', _updateBoard);
   events.on('boardChanged', _checkFullBoard);
+  events.on('returnToLobby', _resetBoardValue);
 
   function _tiles (index, value) {
     return {index, value};
@@ -231,7 +232,11 @@ const gameBoard = (function () {
       events.emit('itsATie')
     };
   }
-
+  
+  function _resetBoardValue() {
+    board.forEach(obj => obj.value = '');
+    console.log(board);
+  }
   return {board};
 })();
 

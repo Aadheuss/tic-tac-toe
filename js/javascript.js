@@ -32,7 +32,6 @@ const lobby = (function() {
   const _playersInfoContainer = document.querySelector('.players-container');
   const _startGameBtn = document.querySelector('.start');
   const _winnerExitBtn = document.querySelector('.winner > button');
-  const _returnBtn = document.querySelector('.return');
   const _playerTypeList = document.querySelectorAll('.type > div');
 
   _playerTypeList.forEach(obj => obj.addEventListener('click', _selectPlayerType));
@@ -56,7 +55,10 @@ const lobby = (function() {
       _name = name;
     };
 
-    const showInfo = () => {_id, _name, _weapon, _type};
+    const showInfo = () => {
+      return {_id, _name, _weapon, _type}
+    };
+    
     return {changeType, changeName, getName, getType, getId, showInfo};
   }
 
@@ -70,6 +72,7 @@ const lobby = (function() {
   events.on('renderChange', _renderType);
   events.on('nameChanged', _updateName);
   events.on('startGame', _closeLobby);
+  events.on('returnToLobby', _openLobby);
 
   //if both players already have a type show the start game button
   function _checkState (players) { 
@@ -108,6 +111,11 @@ const lobby = (function() {
   function _closeLobby() {
     lobbyContainer.classList.add('hidden');
   }
+
+  function _openLobby() {
+    lobbyContainer.classList.remove('hidden');
+  }
+
   //style the selected type container button and its container
   function _renderType(e) {
     const typeSelections = Array.from(e.target.parentElement.children);
@@ -130,6 +138,7 @@ const playersNameDom = (function() {
   inputDom.forEach(dom => dom.addEventListener('input', inputName));
 
   events.on('startGame', _renderName);
+  events.on('returnToLobby', _resetName);
 
   function inputName (e) {
     const playerName = e.target.value;
@@ -146,9 +155,12 @@ const playersNameDom = (function() {
     })
   }
  
-  function resetName() {
-    p1Name = '';
-    p2Name = '';
+  function _resetName(players) {
+    players.forEach(player => {
+      let playerName = player.getId();
+      player.changeName(playerName);
+      console.log(player.showInfo());
+    });
   }
 
   function clearInput() {
@@ -187,11 +199,17 @@ const gameBoard = (function () {
 
 const gameArea = (function() {
   const gameArea = document.querySelector('.game-area');
-  
-  events.on('startGame', _showDom)
+  const returnBtn = document.querySelector('.return');
+  returnBtn.addEventListener('click', _hideDom);
+  events.on('startGame', _showDom);
 
   function _showDom() {
     gameArea.classList.remove('hidden');
+  }
+
+  function _hideDom() {
+    gameArea.classList.add('hidden');
+    events.emit('returnToLobby', lobby.players);
   }
 
 })();

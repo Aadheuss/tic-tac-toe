@@ -192,6 +192,9 @@ const gameBoard = (function () {
   const domElements = document.querySelector('.gameboard');
   const board = [];
 
+  events.on('boardChanged', _updateBoard);
+  events.on('boardChanged', _checkFullBoard);
+
   function _tiles (index, value) {
     return {index, value};
   }
@@ -211,6 +214,22 @@ const gameBoard = (function () {
     const item = document.createElement(type);
     item.setAttribute('data-index', `${this.index}`);
     container.appendChild(item)
+  }
+
+  //Update the board object
+  function _updateBoard(info) {
+    const index = Number(info[0]);
+    const value = info[1];
+    const selectedBoard = board.find(obj => obj.index === index);
+    selectedBoard.value= value;
+  }
+  
+  function _checkFullBoard() {
+    const boardIsFull = board.every(obj => obj.value !== '');
+
+    if(boardIsFull) {
+      events.emit('itsATie')
+    };
   }
 
   return {board};
@@ -238,11 +257,26 @@ const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
   gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
 
+  events.on('itsATie', _renderTie);
+  //select board if board is empty
   function _selectBoard(e) {
-    e.target.textContent = `${scoreBoard.getCurrentPlayer().getWeapon()}`;
-    events.emit('updatePlayerTurn', );
+    const selectedBoard = e.target.getAttribute('data-index');
+    const selectedBoardVal = scoreBoard.getCurrentPlayer().getWeapon()
+    if (e.target.textContent === '') {
+      e.target.textContent = `${scoreBoard.getCurrentPlayer().getWeapon()}`;
+      events.emit('boardChanged', [selectedBoard, selectedBoardVal]);
+      events.emit('updatePlayerTurn', scoreBoard.getRound());
+    }
   }
 
+  //change game board tiles when no players win
+  function _renderTie() {
+      gameBoardDom.forEach(item => item.classList.add('tie'));
+  }
+
+  function _renderWin() {
+    
+  }
   //reset the game board and remove all value
   function _resetBoard () {
   }
@@ -261,7 +295,6 @@ const players = (function() {
   events.on('renderCurrentPlayer', _highlightPlayer);
 
   function _removePlayerHighlight(player) {
-    console.log(player);
     const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') !== player.getId());
     currentPlayerEl.classList.remove('turn');
   }
@@ -335,6 +368,7 @@ const showWin = (function() {
   const getRound = () => round;
   const changeCurrentPlayer = (player) => _currentPlayer = player; 
   const getCurrentPlayer = () => _currentPlayer;
+  
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateRound);
 
@@ -362,15 +396,6 @@ const scoreBoardDom = (function() {
 //check for three in a row 
 const gameLogic = (function() {
   const boardDom = document.querySelectorAll('.gameboard > div');
-  const board = gameBoard.board;
-
-  function checkFullBoard () {
-    const full = board.every(tiles => tiles.value !== '');
-    if (full === true && scoreBoard.win !== true) {
-      boardDom.forEach(item => item.classList.add('tie'));
-      checkWinner('none');
-    }
-  }
 
   function checkRow (array) {
     array.forEach(a => {
@@ -435,7 +460,7 @@ const gameLogic = (function() {
     checkCross([4, 2]);
   }
 
-  return {checkBoard, checkWinner, checkFullBoard};
+  return {checkBoard, checkWinner};
 })();
 
 //typeofPlayer

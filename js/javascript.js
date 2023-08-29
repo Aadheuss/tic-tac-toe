@@ -258,6 +258,7 @@ const gameBoardDom = (function() {
   gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
 
   events.on('itsATie', _renderTie);
+  events.on('returnToLobby', _resetBoard);
   //select board if board is empty
   function _selectBoard(e) {
     const selectedBoard = e.target.getAttribute('data-index');
@@ -278,7 +279,8 @@ const gameBoardDom = (function() {
 
   }
   //reset the game board and remove all value
-  function _resetBoard () {
+  function _resetBoard() {
+    gameBoardDom.forEach(item => item.textContent = '');
   }
   return {};
 })();

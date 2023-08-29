@@ -170,8 +170,8 @@ const playersNameDom = (function() {
   function _renderName(players) {
     players.forEach(player => {
       const name = player.getName();
-      const playerScoreName = document.querySelector(`[data-score='${player.getId()}']`);
-      playerScoreName.textContent = name;
+      const playerScoreName = document.querySelector(`[data-score='${player.getId()}']>div`);
+      playerScoreName.textContent = `${name}:`;
     })
   }
  
@@ -275,7 +275,7 @@ const gameBoardDom = (function() {
   }
 
   function _renderWin() {
-    
+
   }
   //reset the game board and remove all value
   function _resetBoard () {
@@ -368,11 +368,15 @@ const showWin = (function() {
   const getRound = () => round;
   const changeCurrentPlayer = (player) => _currentPlayer = player; 
   const getCurrentPlayer = () => _currentPlayer;
+  const updatePlayerScore = (player) => player++;
+  const getPlayersScore = () => {
+    return [p1Score, p2Score];
+  };
   
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateRound);
 
-  return {p1Score, p2Score, win, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer};
+  return {win, getPlayersScore, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore};
 })();
 
 //keep and update score
@@ -381,22 +385,22 @@ const scoreBoardDom = (function() {
   const _p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
   const _roundDom = document.querySelector('.round > span');
 
+  events.on('scoreChanged', _updatePlayerScore);
+
   //update score to the dom
-  function _updateScore () {
-    p1ScoreDom.textContent = scoreBoard.p1Score;
-    p2ScoreDom.textContent = scoreBoard.p2Score;
+  function _updatePlayerScore () {
+    _p1ScoreDom.textContent = `${scoreBoard.getPlayersScore()[0]}`;
+    _p2ScoreDom.textContent = scoreBoard.getPlayersScore()[1];
   }
 
   //update round count to the dom
   function _updateRound () {
-      roundDom.textContent = scoreBoard.round;
+      _roundDom.textContent = scoreBoard.getRound();
   }
 })()
 
 //check for three in a row 
 const gameLogic = (function() {
-  const boardDom = document.querySelectorAll('.gameboard > div');
-
   function checkRow (array) {
     array.forEach(a => {
       const b = a + 1;
@@ -424,34 +428,14 @@ const gameLogic = (function() {
   
   function checkValue (a, b, c) {
     if (board[a].value !==  '' && board[a].value === board[b].value && board[b].value === board[c].value) {
-      if (scoreBoard.win !== true) {
-        currentPlayer.changeTilesStyle(a, b, c);
-        const result = Lobby.players.find(item => item.weapon === board[a].value);
-        scoreBoard.win = true;
-        checkWinner(result);
-      }
+        const result = lobby.players.find(item => item.weapon === board[a].value);
+        console.log(result);
     }
   }
-  
+
   function checkWinner (winner) {
-    if (winner.id === 'player1') {
-      scoreBoard.p1Score += 1;
-    }
-    
-    if (winner.id === 'player2') {
-      scoreBoard.p2Score += 1;
-    }
-    
-    scoreBoardDom.updateScore()
-    if (scoreBoard.round <= 4) {
-      scoreBoard.round = scoreBoard.round + 1;
-    }
     scoreBoardDom.updateRound()
     gameBoardDom.resetBoard()
-    
-    if (scoreBoard.round > 3) {
-      setTimeout(showWin.announceWinner, 1600);
-    }
   }
 
   function checkBoard () {
@@ -460,7 +444,7 @@ const gameLogic = (function() {
     checkCross([4, 2]);
   }
 
-  return {checkBoard, checkWinner};
+  return {checkValue};
 })();
 
 //typeofPlayer

@@ -29,7 +29,8 @@ const events = {
 const lobby = (function() {
   const players = [];
   const lobbyContainer = document.querySelector('.lobby');
-  const _playersInfoContainer = document.querySelector('.players-container');
+  const _playersInfoContainer = document.querySelectorAll('.players-container>div:not(:nth-child(2))');
+  const _playersTypeBtn = document.querySelectorAll('.type > div');
   const _startGameBtn = document.querySelector('.start');
   const _winnerExitBtn = document.querySelector('.winner > button');
   const _playerTypeList = document.querySelectorAll('.type > div');
@@ -73,6 +74,8 @@ const lobby = (function() {
   events.on('nameChanged', _updateName);
   events.on('startGame', _closeLobby);
   events.on('returnToLobby', _openLobby);
+  events.on('returnToLobby', _resetPlayerType);
+  events.on('returnToLobby', _resetPlayerDom);
 
   //if both players already have a type show the start game button
   function _checkState (players) { 
@@ -92,6 +95,12 @@ const lobby = (function() {
     events.emit('renderChange', e);
   }
   
+  function _resetPlayerType() {
+    players.forEach(player => {
+      player.changeType(null);
+    })
+  }
+
   //update player name to the array players every time an event occurs
   function _updateName(info) {
     let playerId = info.id;
@@ -128,12 +137,17 @@ const lobby = (function() {
     selectedContainer.classList.add(`${selectedType.textContent.toLowerCase()}`)
   }
 
+  //reset players style container and button
+  function _resetPlayerDom() {
+    _playersInfoContainer.forEach(container => container.classList.remove('human', 'ai'));
+    _playersTypeBtn.forEach(btn => btn.classList.remove('selected'));
+  }
+
   return {players};
 })();
 
 //Update the players name on the DOM and update the events on pubSub
 const playersNameDom = (function() {
-  const playersName = document.querySelector('.scoreboard');
   const inputDom = document.querySelectorAll('input');
   inputDom.forEach(dom => dom.addEventListener('input', inputName));
 

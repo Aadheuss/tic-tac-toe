@@ -80,7 +80,6 @@ const lobby = (function() {
 
   //if both players already have a type show the start game button
   function _checkState (players) { 
-    console.log(players[0].getType())
     let isReady = players.every(player => player.getType() !== null);
     if (isReady) {
       events.emit('gameIsReady', _startGameBtn);
@@ -168,7 +167,6 @@ const playersNameDom = (function() {
   }
 
   function _renderName(players) {
-    console.log(players);
     players.forEach(player => {
       const name = player.getName();
       const playerScoreName = document.querySelector(`[data-score='${player.getId()}']`);
@@ -180,7 +178,6 @@ const playersNameDom = (function() {
     players.forEach(player => {
       let playerName = player.getId();
       player.changeName(playerName);
-      console.log(player.showInfo());
     });
   }
 
@@ -254,16 +251,26 @@ const gameBoardDom = (function() {
 })();
 
 //highlight the current player
-const currentPlayer = (function() {
+const players = (function() {
   //scoreboard to keep score on the dom
-  const _scoreDom = document.querySelector('.scoreboard');
+  const _scoreBoard = document.querySelector('.scoreboard');
+  const _playersScoreBoard = document.querySelectorAll('.scoreboard>div');
 
-  function _startTurn (player) {
-    const playerId = player.getId();
-    const playerEl = _scoreDom.children.getAttribute(`${playerId}`)
-    playerEl.classList.add('turn');
+  events.on('startGame', _currentPlayer);
+  events.on('playerStartTurn', _highlightPlayer);
+  events.on('updateTurn', _currentPlayer);
+  events.on('updateTurn', _highlightPlayer);
+
+  function _highlightPlayer(player) {
+    const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') === player.getId());
+    currentPlayerEl.classList.add('turn');
   }
-  
+
+  function _currentPlayer(player) {
+    const currentPlayer = (scoreBoard.getRound() % 2 === 0)?player[0]:player[1];
+    events.emit('playerStartTurn', currentPlayer);
+  }
+
   function changeTilesStyle (a, b, c) {
     const winnerArray = [board[a].index, board[b].index, board[c].index];
     winnerArray.forEach(item => {
@@ -271,8 +278,6 @@ const currentPlayer = (function() {
       winnerItem.classList.add('win')
     })
   }
-
-  return {changeTilesStyle}
 })();
 
 const playerStatus = (function() {
@@ -319,21 +324,31 @@ const showWin = (function() {
   return {announceWinner}
 })();
 
+ //keep track of the players score
+ const scoreBoard = (function () {
+  let win = false;
+  let round = 0;
+  let p1Score = 0;
+  let p2Score = 0;
+ 
+  const updateRound = () => round++;
+  const getRound = () => round;
+
+  events.on('updateTurn', updateRound);
+
+  return {p1Score, p2Score, win, updateRound, getRound};
+})();
+
 //keep and update score
 const scoreBoardDom = (function() {
   const _p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
   const _p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
   const _roundDom = document.querySelector('.round > span');
 
-  //keep track of the players score
-  const scoreBoard = (function () {
-    let win = false;
-    let turn = 1;
-    let round = 1;
-    let p1Score = 0;
-    let p2Score = 0;
-    return {p1Score, p2Score, round, turn, win};
-  })();
+
+  function _updateTurn(player) {
+    events.emit('updateTurn', scoreBoard.getRound());
+  }
 
   //update score to the dom
   function _updateScore () {

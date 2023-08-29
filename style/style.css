@@ -360,8 +360,10 @@ template {
   --green: #A3E635;
   --yellow: #FACC15;
   --red: #DC2626;
-  --human: #3B82F6;
-  --ai: #9333EA;
+  --human-1: #c13337;
+  --human-2: #b35810;
+  --human-light: #e6e5e4;
+  --ai: #;
   --h1-pad: 1rem;
   --h1-font: 3rem;
   --main-title: calc((var(--h1-pad)*2) + var(--h1-font));
@@ -508,7 +510,7 @@ h1,
 }
 
 .players-container > div[class='human'] {
-  background-image: linear-gradient(to left, #2f80ed, var(--yellow));
+  background-image: linear-gradient(-217deg, var(--black-color), var(--human-1), var(--human-2), var(--human-light));
 }
 
 .players-container > div[class='ai'] {
@@ -565,7 +567,7 @@ h1,
 
 .selected {
   font-weight: 400;
-  background-image: linear-gradient(to left, #2f80ed, #56ccf2);
+  background-image: linear-gradient(to right, var(--black-color), var(--human-1), var(--human-2), var(--human-light));
 }
 
 .selected:last-child {
@@ -696,11 +698,11 @@ button {
 }
 
 .player > div:first-child::before {
-  background-size: 50px 50px;
+  background-size: 100% 100%;
   border: var(--black-color) solid 1px;
   border-radius: 50%;
-  height: 50px;
-  width: 50px;
+  height: 100%;
+  width: 100%;
 }
 
 .one > div:first-child::after,
@@ -709,19 +711,12 @@ button {
   font-weight: 300;
 }
 
-.one > div:first-child::after {
-  content: "Player1";
-}
-
-.two > div:first-child::after {
-  content: "Player2";
-}
 .one > div:first-child::before {
-  background-image: url(../img/icons8-user-64.png);
+  background-image: url(../img/red-av.jpg);
 }
 
 .two > div:first-child::before  {
-  background-image: url(../img/icons8-bot-100.png);
+  background-image: url(../img/yellow-av.jpg);
 }
 
 /*Media query selector */

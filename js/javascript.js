@@ -76,6 +76,7 @@ const lobby = (function() {
   events.on('returnToLobby', _openLobby);
   events.on('returnToLobby', _resetPlayerType);
   events.on('returnToLobby', _resetPlayerDom);
+  events.on('gameStopped', _hideElement);
 
   //if both players already have a type show the start game button
   function _checkState (players) { 
@@ -113,6 +114,10 @@ const lobby = (function() {
     el.classList.remove('hidden');
   }
 
+  function _hideElement(el) {
+    el.classList.add('hidden');
+  }
+  
   function _startGame() {
     events.emit('startGame', players);
   }
@@ -141,6 +146,7 @@ const lobby = (function() {
   function _resetPlayerDom() {
     _playersInfoContainer.forEach(container => container.classList.remove('human', 'ai'));
     _playersTypeBtn.forEach(btn => btn.classList.remove('selected'));
+    events.emit('gameStopped', _startGameBtn);
   }
 
   return {players};

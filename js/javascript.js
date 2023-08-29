@@ -47,6 +47,7 @@ const lobby = (function() {
     const getType = () => _type;
     const getId = () => _id;
     const getName = () => _name;
+    const getWeapon = () => _weapon;
 
     const changeType = (type) => {
       _type = type;
@@ -60,7 +61,7 @@ const lobby = (function() {
       return {_id, _name, _weapon, _type}
     };
 
-    return {changeType, changeName, getName, getType, getId, showInfo};
+    return {changeType, changeName, getName, getType, getId, getWeapon, showInfo};
   }
 
   //create two players
@@ -235,13 +236,11 @@ const gameArea = (function() {
 //Check and update the game 
 const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
-  gameBoardDom.forEach(tiles => tiles.addEventListener('click', _checkPlayerTurn));
-    
-  function _checkPlayerTurn() {
-  }
-  
-  function _currentPlayer(player) {
-    let currentPlayer = player;
+  gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
+
+  function _selectBoard(e) {
+    e.target.textContent = `${scoreBoard.getCurrentPlayer().getWeapon()}`;
+    events.emit('updatePlayerTurn', );
   }
 
   //reset the game board and remove all value
@@ -257,18 +256,25 @@ const players = (function() {
   const _playersScoreBoard = document.querySelectorAll('.scoreboard>div');
 
   events.on('startGame', _currentPlayer);
-  events.on('playerStartTurn', _highlightPlayer);
-  events.on('updateTurn', _currentPlayer);
-  events.on('updateTurn', _highlightPlayer);
+  events.on('updatePlayerTurn', _currentPlayer);
+  events.on('renderCurrentPlayer', _removePlayerHighlight)
+  events.on('renderCurrentPlayer', _highlightPlayer);
+
+  function _removePlayerHighlight(player) {
+    console.log(player);
+    const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') !== player.getId());
+    currentPlayerEl.classList.remove('turn');
+  }
 
   function _highlightPlayer(player) {
     const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') === player.getId());
     currentPlayerEl.classList.add('turn');
   }
 
-  function _currentPlayer(player) {
-    const currentPlayer = (scoreBoard.getRound() % 2 === 0)?player[0]:player[1];
-    events.emit('playerStartTurn', currentPlayer);
+  function _currentPlayer() {
+    const player = lobby.players;
+    scoreBoard.changeCurrentPlayer((scoreBoard.getRound() % 2 === 0)?player[0]:player[1]);
+    events.emit('renderCurrentPlayer', scoreBoard.getCurrentPlayer());
   }
 
   function changeTilesStyle (a, b, c) {
@@ -278,13 +284,6 @@ const players = (function() {
       winnerItem.classList.add('win')
     })
   }
-})();
-
-const playerStatus = (function() {
-  let player;
-  let nextPlayer;
-
-  return {player, nextPlayer}
 })();
 
 //show the winner after three round
@@ -328,15 +327,18 @@ const showWin = (function() {
  const scoreBoard = (function () {
   let win = false;
   let round = 0;
+  let _currentPlayer;
   let p1Score = 0;
   let p2Score = 0;
  
   const updateRound = () => round++;
   const getRound = () => round;
+  const changeCurrentPlayer = (player) => _currentPlayer = player; 
+  const getCurrentPlayer = () => _currentPlayer;
+  events.on('startGame', updateRound);
+  events.on('updatePlayerTurn', updateRound);
 
-  events.on('updateTurn', updateRound);
-
-  return {p1Score, p2Score, win, updateRound, getRound};
+  return {p1Score, p2Score, win, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer};
 })();
 
 //keep and update score
@@ -344,11 +346,6 @@ const scoreBoardDom = (function() {
   const _p1ScoreDom = document.querySelector('.scoreboard > div:first-child > span');
   const _p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
   const _roundDom = document.querySelector('.round > span');
-
-
-  function _updateTurn(player) {
-    events.emit('updateTurn', scoreBoard.getRound());
-  }
 
   //update score to the dom
   function _updateScore () {

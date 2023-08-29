@@ -511,21 +511,24 @@ const replay = (function() {
   return {reset, playAgain}
 })();
 
-//for label related output
+//for label Name if the input is not empty
 const labelDom = (function() {
-  const inputDom = document.querySelectorAll('input');
+  const nameInputDom = document.querySelectorAll('input');
+  nameInputDom.forEach(el => el.addEventListener('input', _hideLabel));
+  nameInputDom.forEach(el => el.addEventListener('focus', () => el.previousElementSibling.classList.add('black')));
+  nameInputDom.forEach(el => el.addEventListener('blur', () => el.previousElementSibling.classList.remove('black')));
 
-  inputDom.forEach(dom => dom.addEventListener('input', hideLabel));
-  inputDom.forEach(dom => dom.addEventListener('focus', () => dom.previousElementSibling.classList.add('black')));
-  inputDom.forEach(dom => dom.addEventListener('blur', () => dom.previousElementSibling.classList.remove('black')));
+  events.on('returnToLobby', _resetLabel);
 
-  function hideLabel () {
+  function _hideLabel() {
     if (this.value.length > 0) {
       this.previousElementSibling.classList.add('hidden');
     } else {
       this.previousElementSibling.classList.remove('hidden');
     }
   }
-  
-  return  {hideLabel}
+
+  function _resetLabel() {
+    nameInputDom.forEach(dom => dom.previousElementSibling.classList.remove('hidden'));
+  }
 })();

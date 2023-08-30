@@ -152,6 +152,24 @@ const lobby = (function() {
   return {players};
 })();
 
+//Show the game area
+const gameArea = (function() {
+  const gameArea = document.querySelector('.game-area');
+  const returnBtn = document.querySelector('.return');
+  returnBtn.addEventListener('click', _hideDom);
+  events.on('startGame', _showDom);
+
+  function _showDom() {
+    gameArea.classList.remove('hidden');
+  }
+
+  function _hideDom() {
+    gameArea.classList.add('hidden');
+    events.emit('returnToLobby', lobby.players);
+  }
+
+})();
+
 //Update the players name on the DOM and update the events on pubSub
 const playersNameDom = (function() {
   const inputDom = document.querySelectorAll('input');
@@ -239,23 +257,6 @@ const gameBoard = (function () {
   return {board};
 })();
 
-const gameArea = (function() {
-  const gameArea = document.querySelector('.game-area');
-  const returnBtn = document.querySelector('.return');
-  returnBtn.addEventListener('click', _hideDom);
-  events.on('startGame', _showDom);
-
-  function _showDom() {
-    gameArea.classList.remove('hidden');
-  }
-
-  function _hideDom() {
-    gameArea.classList.add('hidden');
-    events.emit('returnToLobby', lobby.players);
-  }
-
-})();
-
 //Check and update the game 
 const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > div');
@@ -336,41 +337,23 @@ const players = (function() {
   }
 })();
 
-//show the winner after three round
+//show the winner
 const showWin = (function() {
+  const winContainer = document.querySelector('.winner > div');
+  console.log(winContainer);
   const restartButton = document.querySelector('.restart');
   
-  function announceWinner () {
-    const winner = document.querySelector('.winner > div');
-    winner.parentElement.classList.remove('hidden');
+  events.on('renderWinner', _announceWinner);
 
-    const p1 = Lobby.players.find(player => player.id === 'player1');
-    const p2 = Lobby.players.find(player => player.id === 'player2');
-
-    if (scoreBoard.p1Score > scoreBoard.p2Score) {
-      if (p1.name !== '') {
-        winner.textContent = `${p1.name} wins!`;
-      } else {
-        winner.textContent = 'Player1 wins!'
-      } 
-      winner.parentElement.classList.remove('no-win');
-
-    } else if (scoreBoard.p1Score < scoreBoard.p2Score) {
-      if (p2.name !== '') {
-        winner.textContent = `${p2.name} wins!`;
-      } else {
-        winner.textContent = 'Player2 wins!';
-      }
-      winner.parentElement.classList.remove('no-win');
-
+  function _announceWinner (winner) {
+    winContainer.parentElement.classList.remove('hidden');
+    if (winner !== null) {
+      winContainer.textContent = `${winner.getName()} won!`
     } else {
-      winner.textContent = `It's a tie!`;
-      winner.parentElement.classList.add('no-win');
+      winContainer.textContent = 'It\'s a tie!'
     }
     restartButton.classList.remove('hidden');   
   }
-
-  return {announceWinner}
 })();
 
  //keep track of the players score
@@ -404,7 +387,6 @@ const showWin = (function() {
   const getInfo = () => {
     return {win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
   }
-
   const _resetScoreBoard = () => {
     win = false;
     _currentPlayer = undefined;
@@ -412,6 +394,23 @@ const showWin = (function() {
     turnCount = 0;
     p1Score = 0;
     p2Score = 0;
+  }
+  const isGameOver = () => {
+    if (roundCount > 3) {
+      events.emit('gameOver');
+    }
+  }
+  const _getWinner = () => {
+    console.log({p1Score, p2Score});
+    let winner;
+    if (p1Score > p2Score) {
+      winner = lobby.players.find(player => player.getId() === 'player1');
+    } else if (p2Score > p1Score) {
+      winner = lobby.players.find(player => player.getId() === 'player2');
+    } else {
+      winner = null;
+    }
+    events.emit('renderWinner', winner);
   }
 
   events.on('startGame', updateTurn);
@@ -422,6 +421,8 @@ const showWin = (function() {
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
   events.on('returnToLobby', _resetScoreBoard);
+  events.on('gameOver', _getWinner);
+  events.on('roundEnded', isGameOver);
 
   return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn, getInfo};
 })();
@@ -494,8 +495,6 @@ const gameLogic = (function() {
     checkColumn([0, 1, 2]);
     checkCross([4, 2]);
   }
-
-  return {checkBoard};
 })();
 
 //typeofPlayer

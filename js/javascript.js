@@ -363,7 +363,7 @@ const players = (function() {
 
  //keep track of the players score
  const scoreBoard = (function () {
-  let win = false;
+  let _win = false;
   let roundCount = 0;
   let turnCount = 0;
   let _currentPlayer;
@@ -384,13 +384,14 @@ const players = (function() {
     return [p1Score, p2Score];
   };
   const _logWIn = () => {
-    win = true;
+    _win = true;
   };
+  const getWin = () => _win;
   const _resetWin = () => {
-    win = false;
+    _win = false;
   };
   const getInfo = () => {
-    return {win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
+    return {_win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
   }
   const _resetScoreBoard = () => {
     win = false;
@@ -431,7 +432,7 @@ const players = (function() {
   events.on('gameOver', _getWinner);
   events.on('roundEnded', isGameOver);
 
-  return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn, getInfo};
+  return {getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn, getInfo, getWin};
 })();
 
 //keep and update score
@@ -495,14 +496,17 @@ const gameLogic = (function() {
     if (gameBoard.board[a].value !==  '' 
     && gameBoard.board[a].value === gameBoard.board[b].value 
     && gameBoard.board[b].value === gameBoard.board[c].value) {
+      // if the player has won and the board is not overlapping emit win event
+      if (!scoreBoard.getWin()) {
         events.emit('aPlayerWon', [a, b, c]);
+      }
     }
   }
 
   function checkBoard() {
-    checkRow ([0, 3, 6]);
-    checkColumn([0, 1, 2]);
-    checkCross([4, 2]);
+      checkRow ([0, 3, 6]);
+      checkColumn([0, 1, 2]);
+      checkCross([4, 2]);
   }
 })();
 

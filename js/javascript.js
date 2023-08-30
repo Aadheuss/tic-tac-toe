@@ -235,7 +235,6 @@ const gameBoard = (function () {
   
   function _resetBoardValue() {
     board.forEach(obj => obj.value = '');
-    console.log(board);
   }
   return {board};
 })();
@@ -264,6 +263,7 @@ const gameBoardDom = (function() {
 
   events.on('itsATie', _renderTie);
   events.on('returnToLobby', _resetBoard);
+  events.on('aPlayerWon', _renderWin)
   //select board if board is empty
   function _selectBoard(e) {
     const selectedBoard = e.target.getAttribute('data-index');
@@ -277,11 +277,14 @@ const gameBoardDom = (function() {
 
   //change game board tiles when no players win
   function _renderTie() {
-      gameBoardDom.forEach(item => item.classList.add('tie'));
+    gameBoardDom.forEach(item => item.classList.add('tie'));
   }
 
-  function _renderWin() {
-
+  function _renderWin(board) {
+    for (let i = 0; i < board.length; i++) {
+     const selectedBoard = Array.from(gameBoardDom).find(item => Number(item.getAttribute(`data-index`)) === board[i]);
+     selectedBoard.classList.add('win');
+    }
   }
   //reset the game board and remove all value
   function _resetBoard() {
@@ -379,9 +382,11 @@ const showWin = (function() {
   const getPlayersScore = () => {
     return [p1Score, p2Score];
   };
+  const _logWIn = () => win = true;
   
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateRound);
+  events.on('aPlayerWon', _logWIn);
 
   return {win, getPlayersScore, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore};
 })();
@@ -408,15 +413,17 @@ const scoreBoardDom = (function() {
 
 //check for three in a row 
 const gameLogic = (function() {
-  function checkRow (array) {
+  events.on('boardChanged', checkBoard);
+  //Check for a three in a row
+  function checkRow(array) {
     array.forEach(a => {
       const b = a + 1;
       const c = b + 1;
       checkValue(a, b, c);
     })
   }
-
-  function checkColumn (array) {
+  //Check for a three in a column
+  function checkColumn(array) {
     array.forEach(a => {
       const b = a + 3;
       const c = b + 3;
@@ -424,7 +431,8 @@ const gameLogic = (function() {
     })
   }
   
-  function checkCross (array) {
+  //Check for a three in diagonal 
+  function checkCross(array) {
     array.forEach(n => {
       const a = 4;
       const b = a + n;
@@ -433,10 +441,12 @@ const gameLogic = (function() {
     })
   }
   
+  //check if all the value is the same
   function checkValue (a, b, c) {
-    if (board[a].value !==  '' && board[a].value === board[b].value && board[b].value === board[c].value) {
-        const result = lobby.players.find(item => item.weapon === board[a].value);
-        console.log(result);
+    if (gameBoard.board[a].value !==  '' 
+    && gameBoard.board[a].value === gameBoard.board[b].value 
+    && gameBoard.board[b].value === gameBoard.board[c].value) {
+        events.emit('aPlayerWon', [a, b, c]);
     }
   }
 
@@ -445,13 +455,14 @@ const gameLogic = (function() {
     gameBoardDom.resetBoard()
   }
 
-  function checkBoard () {
+
+  function checkBoard() {
     checkRow ([0, 3, 6]);
     checkColumn([0, 1, 2]);
     checkCross([4, 2]);
   }
 
-  return {checkValue};
+  return {checkBoard};
 })();
 
 //typeofPlayer

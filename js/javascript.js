@@ -280,6 +280,7 @@ const gameBoardDom = (function() {
   //change game board tiles when no players win
   function _renderTie() {
     gameBoardDom.forEach(item => item.classList.add('tie'));
+    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', _selectBoard));
     setTimeout(events.emit.bind(events, 'roundEnded'), 2000);
   }
 
@@ -288,6 +289,7 @@ const gameBoardDom = (function() {
      const selectedBoard = Array.from(gameBoardDom).find(item => Number(item.getAttribute(`data-index`)) === board[i]);
      selectedBoard.classList.add('win');
     }
+    gameBoardDom.forEach(tiles => tiles.removeEventListener('click', _selectBoard));
     setTimeout(events.emit.bind(events, 'roundEnded'), 2000);
   }
   //reset the game board and remove all value
@@ -297,6 +299,7 @@ const gameBoardDom = (function() {
       item.classList.remove('win', 'tie');
       }
     );
+    gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
   }
   return {};
 })();

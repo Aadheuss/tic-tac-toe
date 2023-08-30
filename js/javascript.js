@@ -228,8 +228,7 @@ const gameBoard = (function () {
   
   function _checkFullBoard() {
     const boardIsFull = board.every(obj => obj.value !== '');
-
-    if(boardIsFull) {
+    if(boardIsFull &&scoreBoard.win) {
       events.emit('itsATie')
     };
   }
@@ -402,7 +401,10 @@ const showWin = (function() {
   const _resetWin = () => {
     win = false;
   };
-  
+  const getInfo = () => {
+    return {win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
+  }
+
   events.on('startGame', updateTurn);
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateTurn);
@@ -411,7 +413,7 @@ const showWin = (function() {
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
 
-  return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn};
+  return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn, getInfo};
 })();
 
 //keep and update score

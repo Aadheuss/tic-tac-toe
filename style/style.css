@@ -604,10 +604,23 @@ h1,
   color: var(--red);
 }
 
+.winner > :first-child > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  color: var(--black-color);
+  border-radius: 3px;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--yellow);
+  border: var(--human-2 1px solid);
+}
+
 .winner > div:first-child {
   display: grid;
   place-content: center;
-  background-color: var(--white-color);
+  background-color: var(--black-color);
+  color: var(--human-light);
 }
 
 .winner > div:first-child {
@@ -628,13 +641,8 @@ h1,
   top: 0;
 }
 
-.restart {
-  place-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
 
-.restart button {
+button.restart {
   border: 1px var(--black-color) solid;
   padding: 0.25rem 0.5rem;
   font-size: 1rem;
@@ -649,21 +657,21 @@ button {
   cursor: pointer;
 }
 
-.restart button:hover {
+button.restart:hover {
   color: var(--black-color);
-  background-color: var(--yellow);
+  background-color: var(--human-1);
 }
 
-.restart button,
+button.restart,
 .return:hover {
   transform: scale(1.05);
-  border-top-color: var(--red);
-  border-bottom-color: var(--green);
+  border-top-color: var(--human-1);
+  border-bottom-color: var(--human-2);
 }
 
 /* Pseudo elements */
 .player > div:first-child::before,
-.winner >div:first-child::before {
+.winner > div:first-child::before {
   content: "";
   background-repeat: no-repeat;
 }

@@ -394,8 +394,8 @@ const players = (function() {
   }
   const _resetScoreBoard = () => {
     win = false;
-    roundCount = 1;
-    turnCount = 1;
+    roundCount = 0;
+    turnCount = 0;
     p1Score = 0;
     p2Score = 0;
   }
@@ -419,13 +419,15 @@ const players = (function() {
 
   events.on('startGame', updateTurn);
   events.on('startGame', updateRound);
+  events.on('restartGame', _resetScoreBoard);
+  events.on('restartGame', updateRound);
+  events.on('restartGame', updateTurn);
   events.on('updatePlayerTurn', updateTurn);
   events.on('aPlayerWon', _logWIn);
   events.on('aPlayerWon', updatePlayerScore);
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
   events.on('returnToLobby', _resetScoreBoard);
-  events.on('restartGame', _resetScoreBoard);
   events.on('gameOver', _getWinner);
   events.on('roundEnded', isGameOver);
 
@@ -439,10 +441,9 @@ const scoreBoardDom = (function() {
   const _roundDom = document.querySelector('.round > span');
 
   events.on('scoreChanged', _updatePlayerScore);
-  events.on('roundChanged', _updatePlayerScore);
+  events.on('roundChanged', _updateRoundScore);
   events.on('roundEnded', _updateRoundScore);
   events.on('returnToLobby', _updatePlayerScore);
-  events.on('startGame', _updateRoundScore);
   events.on('restartGame', _updatePlayerScore);
   events.on('restartGame', _updateRoundScore);
 

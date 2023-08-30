@@ -441,6 +441,7 @@ const scoreBoardDom = (function() {
   const _p2ScoreDom = document.querySelector('.scoreboard > div:last-child > span');
   const _roundDom = document.querySelector('.round > span');
 
+  events.on('startGame', _updateRoundScore);
   events.on('scoreChanged', _updatePlayerScore);
   events.on('roundChanged', _updateRoundScore);
   events.on('roundEnded', _updateRoundScore);

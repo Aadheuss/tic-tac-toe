@@ -405,6 +405,15 @@ const showWin = (function() {
     return {win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
   }
 
+  const _resetScoreBoard = () => {
+    win = false;
+    _currentPlayer = undefined;
+    roundCount = 0;
+    turnCount = 0;
+    p1Score = 0;
+    p2Score = 0;
+  }
+
   events.on('startGame', updateTurn);
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateTurn);
@@ -412,6 +421,7 @@ const showWin = (function() {
   events.on('aPlayerWon', updatePlayerScore);
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
+  events.on('returnToLobby', _resetScoreBoard);
 
   return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn, getInfo};
 })();
@@ -425,6 +435,8 @@ const scoreBoardDom = (function() {
   events.on('scoreChanged', _updatePlayerScore);
   events.on('roundChanged', _updatePlayerScore);
   events.on('roundEnded', _updateRoundScore);
+  events.on('returnToLobby', _updatePlayerScore);
+  events.on('startGame', _updateRoundScore);
 
   //update score to the dom
   function _updatePlayerScore () {
@@ -476,12 +488,6 @@ const gameLogic = (function() {
         events.emit('aPlayerWon', [a, b, c]);
     }
   }
-
-  function checkWinner (winner) {
-    scoreBoardDom.updateRound()
-    gameBoardDom.resetBoard()
-  }
-
 
   function checkBoard() {
     checkRow ([0, 3, 6]);

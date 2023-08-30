@@ -195,6 +195,7 @@ const gameBoard = (function () {
   events.on('boardChanged', _updateBoard);
   events.on('boardChanged', _checkFullBoard);
   events.on('returnToLobby', _resetBoardValue);
+  events.on('roundEnded', _resetBoardValue);
 
   function _tiles (index, value) {
     return {index, value};
@@ -264,6 +265,7 @@ const gameBoardDom = (function() {
   events.on('itsATie', _renderTie);
   events.on('returnToLobby', _resetBoard);
   events.on('aPlayerWon', _renderWin)
+  events.on('roundEnded', _resetBoard);
   //select board if board is empty
   function _selectBoard(e) {
     const selectedBoard = e.target.getAttribute('data-index');
@@ -278,6 +280,7 @@ const gameBoardDom = (function() {
   //change game board tiles when no players win
   function _renderTie() {
     gameBoardDom.forEach(item => item.classList.add('tie'));
+    setTimeout(events.emit.bind(events, 'roundEnded'), 2000);
   }
 
   function _renderWin(board) {
@@ -285,10 +288,15 @@ const gameBoardDom = (function() {
      const selectedBoard = Array.from(gameBoardDom).find(item => Number(item.getAttribute(`data-index`)) === board[i]);
      selectedBoard.classList.add('win');
     }
+    setTimeout(events.emit.bind(events, 'roundEnded'), 2000);
   }
   //reset the game board and remove all value
   function _resetBoard() {
-    gameBoardDom.forEach(item => item.textContent = '');
+    gameBoardDom.forEach(item => {
+      item.textContent = '';
+      item.classList.remove('win', 'tie');
+    }
+    );
   }
   return {};
 })();

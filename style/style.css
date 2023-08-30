@@ -455,10 +455,12 @@ h1,
 }
 
 .round {
+  background-image: linear-gradient(-217deg, var(--black-color), var(--human-1), var(--human-2), var(--human-light));
   padding: 0.25em 1em;
   gap: 0.25rem;
   font-size: 1.25rem;
   justify-content: center;
+  width: 300px;
 }
 
 .scoreboard > div {

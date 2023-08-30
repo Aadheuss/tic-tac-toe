@@ -659,7 +659,7 @@ button {
 
 button.restart:hover {
   color: var(--black-color);
-  background-color: var(--human-1);
+  background-image: linear-gradient(to right, var(--human-1), var(--human-2));
 }
 
 button.restart,

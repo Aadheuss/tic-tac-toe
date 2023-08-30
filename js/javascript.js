@@ -155,11 +155,15 @@ const lobby = (function() {
 //Show the game area
 const gameArea = (function() {
   const gameArea = document.querySelector('.game-area');
+  const winnerEl = document.querySelector('.winner > div > div');
+  const winContainer = winnerEl.parentElement.parentElement;
   const returnBtn = document.querySelector('.return');
   const restartBtn = document.querySelector('.restart');
   returnBtn.addEventListener('click', _hideDom);
   restartBtn.addEventListener('click', _restartGame);
+
   events.on('startGame', _showDom);
+  events.on('renderWinner', _announceWinner);
 
   function _showDom() {
     gameArea.classList.remove('hidden');
@@ -172,7 +176,17 @@ const gameArea = (function() {
 
   //replay or reset the game
   function _restartGame() {
+    winContainer.close();
     events.emit('restartGame');
+  }
+
+  function _announceWinner (winner) {
+    if (winner !== null) {
+      winnerEl.textContent = `${winner.getName()} won!`
+    } else {
+      winnerEl.textContent = 'It\'s a tie!'
+    }
+    winContainer.showModal();
   }
 })();
 
@@ -317,6 +331,7 @@ const players = (function() {
   const _playersScoreBoard = document.querySelectorAll('.scoreboard>div');
 
   events.on('startGame', _currentPlayer);
+  events.on('restartGame', _currentPlayer);
   events.on('updatePlayerTurn', _currentPlayer);
   events.on('renderCurrentPlayer', _removePlayerHighlight)
   events.on('renderCurrentPlayer', _highlightPlayer);
@@ -343,24 +358,6 @@ const players = (function() {
       const winnerItem = document.querySelector(`[data-index = '${item}']`)
       winnerItem.classList.add('win')
     })
-  }
-})();
-
-//show the winner
-const showWin = (function() {
-  const winContainer = document.querySelector('.winner > div > div');
-  const restartButton = document.querySelector('.restart');
-  
-  events.on('renderWinner', _announceWinner);
-
-  function _announceWinner (winner) {
-    if (winner !== null) {
-      winContainer.textContent = `${winner.getName()} won!`
-    } else {
-      winContainer.textContent = 'It\'s a tie!'
-    }
-    
-    winContainer.parentElement.parentElement.showModal();
   }
 })();
 
@@ -397,9 +394,8 @@ const showWin = (function() {
   }
   const _resetScoreBoard = () => {
     win = false;
-    _currentPlayer = undefined;
-    roundCount = 0;
-    turnCount = 0;
+    roundCount = 1;
+    turnCount = 1;
     p1Score = 0;
     p2Score = 0;
   }
@@ -458,6 +454,7 @@ const scoreBoardDom = (function() {
 
   //update round count to the dom
   function _updateRoundScore () {
+    console.log(scoreBoard.getInfo());
       _roundDom.textContent = scoreBoard.getRound();
   }
 })()

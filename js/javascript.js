@@ -156,7 +156,9 @@ const lobby = (function() {
 const gameArea = (function() {
   const gameArea = document.querySelector('.game-area');
   const returnBtn = document.querySelector('.return');
+  const restartBtn = document.querySelector('.restart');
   returnBtn.addEventListener('click', _hideDom);
+  restartBtn.addEventListener('click', _restartGame);
   events.on('startGame', _showDom);
 
   function _showDom() {
@@ -168,6 +170,10 @@ const gameArea = (function() {
     events.emit('returnToLobby', lobby.players);
   }
 
+  //replay or reset the game
+  function _restartGame() {
+    events.emit('restartGame');
+  }
 })();
 
 //Update the players name on the DOM and update the events on pubSub
@@ -246,7 +252,7 @@ const gameBoard = (function () {
   
   function _checkFullBoard() {
     const boardIsFull = board.every(obj => obj.value !== '');
-    if(boardIsFull &&scoreBoard.win) {
+    if(boardIsFull && scoreBoard.win) {
       events.emit('itsATie')
     };
   }
@@ -342,20 +348,19 @@ const players = (function() {
 
 //show the winner
 const showWin = (function() {
-  const winContainer = document.querySelector('.winner > div');
-  console.log(winContainer);
+  const winContainer = document.querySelector('.winner > div > div');
   const restartButton = document.querySelector('.restart');
   
   events.on('renderWinner', _announceWinner);
 
   function _announceWinner (winner) {
-    winContainer.parentElement.classList.remove('hidden');
     if (winner !== null) {
       winContainer.textContent = `${winner.getName()} won!`
     } else {
       winContainer.textContent = 'It\'s a tie!'
     }
-    restartButton.classList.remove('hidden');   
+    
+    winContainer.parentElement.parentElement.showModal();
   }
 })();
 
@@ -424,6 +429,7 @@ const showWin = (function() {
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
   events.on('returnToLobby', _resetScoreBoard);
+  events.on('restartGame', _resetScoreBoard);
   events.on('gameOver', _getWinner);
   events.on('roundEnded', isGameOver);
 
@@ -441,6 +447,8 @@ const scoreBoardDom = (function() {
   events.on('roundEnded', _updateRoundScore);
   events.on('returnToLobby', _updatePlayerScore);
   events.on('startGame', _updateRoundScore);
+  events.on('restartGame', _updatePlayerScore);
+  events.on('restartGame', _updateRoundScore);
 
   //update score to the dom
   function _updatePlayerScore () {
@@ -544,45 +552,6 @@ const humanOrBot = (function() {
   }
 
   return {robotTurn, humanTurn};
-})();
-
-//replay or reset the game
-const replay = (function() {
-  const boardDom = document.querySelectorAll('.gameboard > div');
-  const restartButton = document.querySelector('.restart');
-  restartButton.addEventListener('click', playAgain);
-
-  function playAgain () {
-    const winner = document.querySelector('.winner > div');
-    winner.parentElement.classList.add('hidden');
-    const restartButton = document.querySelector('.restart');
-    restartButton.classList.add('hidden');
-
-    scoreBoard.round = 1;
-    scoreBoard.p1Score = 0;
-    scoreBoard.p2Score = 0;
-    scoreBoardDom.updateScore();
-    scoreBoardDom.updateRound();
-    if (Lobby.players.length === 2) {
-      setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
-    }
-  }
-
-  function reset () {
-    boardDom.forEach(board => board.removeEventListener('click', gameBoardDom.checkPlayerTurn))
-    boardDom.forEach(board => board.addEventListener('click', gameBoardDom.checkPlayerTurn))
-    scoreBoard.turn = 1;
-    playerStatus.player = undefined;
-    playerStatus.nextPlayer = undefined;
-    playAgain();
-    gameBoard.board.forEach(board => board.value = '');
-    boardDom.forEach(tiles => {
-          tiles.textContent = '';
-          tiles.classList.remove('win', 'tie');}
-    );
-  }
-
-  return {reset, playAgain}
 })();
 
 //for label Name if the input is not empty

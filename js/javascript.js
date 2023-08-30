@@ -295,7 +295,7 @@ const gameBoardDom = (function() {
     gameBoardDom.forEach(item => {
       item.textContent = '';
       item.classList.remove('win', 'tie');
-    }
+      }
     );
   }
   return {};
@@ -324,7 +324,7 @@ const players = (function() {
 
   function _currentPlayer() {
     const player = lobby.players;
-    scoreBoard.changeCurrentPlayer((scoreBoard.getRound() % 2 === 0)?player[0]:player[1]);
+    scoreBoard.changeCurrentPlayer((scoreBoard.getTurn() % 2 === 0)?player[0]:player[1]);
     events.emit('renderCurrentPlayer', scoreBoard.getCurrentPlayer());
   }
 
@@ -377,13 +377,16 @@ const showWin = (function() {
  //keep track of the players score
  const scoreBoard = (function () {
   let win = false;
-  let round = 0;
+  let roundCount = 0;
+  let turnCount = 0;
   let _currentPlayer;
   let p1Score = 0;
   let p2Score = 0;
  
-  const updateRound = () => round++;
-  const getRound = () => round;
+  const updateRound = () => roundCount++;
+  const updateTurn = () => turnCount++;
+  const getRound = () => roundCount;
+  const getTurn = () => turnCount;
   const changeCurrentPlayer = (player) => _currentPlayer = player; 
   const getCurrentPlayer = () => _currentPlayer;
   const updatePlayerScore = () => {
@@ -396,13 +399,19 @@ const showWin = (function() {
   const _logWIn = () => {
     win = true;
   };
+  const _resetWin = () => {
+    win = false;
+  };
   
+  events.on('startGame', updateTurn);
   events.on('startGame', updateRound);
-  events.on('updatePlayerTurn', updateRound);
+  events.on('updatePlayerTurn', updateTurn);
   events.on('aPlayerWon', _logWIn);
-  events.on('aPlayerWon', updatePlayerScore)
+  events.on('aPlayerWon', updatePlayerScore);
+  events.on('roundEnded', updateRound);
+  events.on('roundEnded', _resetWin);
 
-  return {win, getPlayersScore, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore};
+  return {win, getPlayersScore,getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore, getTurn};
 })();
 
 //keep and update score
@@ -412,6 +421,8 @@ const scoreBoardDom = (function() {
   const _roundDom = document.querySelector('.round > span');
 
   events.on('scoreChanged', _updatePlayerScore);
+  events.on('roundChanged', _updatePlayerScore);
+  events.on('roundEnded', _updateRoundScore);
 
   //update score to the dom
   function _updatePlayerScore () {
@@ -420,7 +431,7 @@ const scoreBoardDom = (function() {
   }
 
   //update round count to the dom
-  function _updateRound () {
+  function _updateRoundScore () {
       _roundDom.textContent = scoreBoard.getRound();
   }
 })()

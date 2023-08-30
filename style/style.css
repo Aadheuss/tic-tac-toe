@@ -604,15 +604,13 @@ h1,
   color: var(--red);
 }
 
-.winner,
-.winner > button,
-.restart {
+.winner > div:first-child {
   display: grid;
   place-content: center;
   background-color: var(--white-color);
 }
 
-.winner {
+.winner > div:first-child {
   font-weight: 500;
   font-size: 1.05rem;
   color: #475569;
@@ -628,15 +626,6 @@ h1,
   right: 0;
   bottom: 0;
   top: 0;
-}
-
-.winner > button {
-  position: absolute;
-  border: none;
-  right: 0.25rem;
-  top: 0.25rem;
-  width: 20px;
-  height: 20px;
 }
 
 .restart {
@@ -674,13 +663,12 @@ button {
 
 /* Pseudo elements */
 .player > div:first-child::before,
-.winner::before,
-.winner > button::before {
+.winner >div:first-child::before {
   content: "";
   background-repeat: no-repeat;
 }
 
-.winner::before {
+.winner > div:first-child::before {
   background-image: url(../img/medal.png);
   background-size: 125px 125px;
   width: 125px;
@@ -689,14 +677,6 @@ button {
 
 .no-win::before {
   background-image: url(../img/winner.png);
-}
-
-.winner > button::before {
-  background-image: url(../img/plus.svg);
-  background-size: 20px 20px;
-  width: 20px;
-  height: 20px;
-  transform: rotate(45deg);
 }
 
 .player > div:first-child::before {

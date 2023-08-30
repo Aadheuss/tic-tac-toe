@@ -231,7 +231,7 @@ const gameBoard = (function () {
   const board = [];
 
   events.on('boardChanged', _updateBoard);
-  events.on('boardChanged', _checkFullBoard);
+  events.on('boardChecked', _checkFullBoard);
   events.on('returnToLobby', _resetBoardValue);
   events.on('roundEnded', _resetBoardValue);
 
@@ -264,9 +264,10 @@ const gameBoard = (function () {
     selectedBoard.value= value;
   }
   
-  function _checkFullBoard() {
+  function _checkFullBoard(win) {
     const boardIsFull = board.every(obj => obj.value !== '');
-    if(boardIsFull && scoreBoard.win) {
+    //Check if the board is full and no winning board
+    if(boardIsFull && !win) {
       events.emit('itsATie')
     };
   }
@@ -319,7 +320,7 @@ const gameBoardDom = (function() {
       item.classList.remove('win', 'tie');
       }
     );
-    gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
+    gameBoardDom.forEach(tiles => setTimeout.bind(this,tiles.addEventListener('click', _selectBoard)), 100);
   }
   return {};
 })();
@@ -502,6 +503,8 @@ const gameLogic = (function() {
         events.emit('aPlayerWon', [a, b, c]);
       }
     }
+
+    events.emit('boardChecked', scoreBoard.getWin());
   }
 
   function checkBoard() {

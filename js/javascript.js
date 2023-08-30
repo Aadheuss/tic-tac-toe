@@ -386,15 +386,21 @@ const showWin = (function() {
   const getRound = () => round;
   const changeCurrentPlayer = (player) => _currentPlayer = player; 
   const getCurrentPlayer = () => _currentPlayer;
-  const updatePlayerScore = (player) => player++;
+  const updatePlayerScore = () => {
+    _currentPlayer.getId() === 'player1'?p1Score++:p2Score++;
+    events.emit('scoreChanged', getPlayersScore());
+  }
   const getPlayersScore = () => {
     return [p1Score, p2Score];
   };
-  const _logWIn = () => win = true;
+  const _logWIn = () => {
+    win = true;
+  };
   
   events.on('startGame', updateRound);
   events.on('updatePlayerTurn', updateRound);
   events.on('aPlayerWon', _logWIn);
+  events.on('aPlayerWon', updatePlayerScore)
 
   return {win, getPlayersScore, updateRound, getRound, changeCurrentPlayer, getCurrentPlayer, updatePlayerScore};
 })();
@@ -410,7 +416,7 @@ const scoreBoardDom = (function() {
   //update score to the dom
   function _updatePlayerScore () {
     _p1ScoreDom.textContent = `${scoreBoard.getPlayersScore()[0]}`;
-    _p2ScoreDom.textContent = scoreBoard.getPlayersScore()[1];
+    _p2ScoreDom.textContent = `${scoreBoard.getPlayersScore()[1]}`;
   }
 
   //update round count to the dom

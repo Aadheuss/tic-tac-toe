@@ -688,10 +688,13 @@ button.restart,
 }
 
 .winner > div:first-child::before {
-  background-image: url(../img/medal.png);
   background-size: 125px 125px;
   width: 125px;
   height: 125px;
+}
+
+.win::before {
+  background-image: url(../img/medal.png);
 }
 
 .no-win::before {

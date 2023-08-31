@@ -182,9 +182,13 @@ const gameArea = (function() {
 
   function _announceWinner (winner) {
     if (winner !== null) {
-      winnerEl.textContent = `${winner.getName()} won!`
+      winnerEl.parentElement.classList.add('win');
+      winnerEl.parentElement.classList.remove('no-win');
+      winnerEl.textContent = `${winner.getName()} won!`;
     } else {
-      winnerEl.textContent = 'It\'s a tie!'
+      winnerEl.parentElement.classList.remove('win');
+      winnerEl.parentElement.classList.add('no-win');
+      winnerEl.textContent = 'It\'s a tie!';
     }
     winContainer.showModal();
   }

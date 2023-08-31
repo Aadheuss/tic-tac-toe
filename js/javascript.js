@@ -262,6 +262,8 @@ const gameBoard = (function () {
     const value = info[1];
     const selectedBoard = board.find(obj => obj.index === index);
     selectedBoard.value = value;
+
+    console.log(scoreBoard.getTurn());
   }
   
   function _checkBoard(win) {
@@ -331,9 +333,7 @@ const players = (function() {
   const _scoreBoard = document.querySelector('.scoreboard');
   const _playersScoreBoard = document.querySelectorAll('.scoreboard>div');
 
-  events.on('startGame', _currentPlayer);
-  events.on('restartGame', _currentPlayer);
-  events.on('updatePlayerTurn', _currentPlayer);
+  events.on('turnUpdated', _currentPlayer);
   events.on('renderCurrentPlayer', _removePlayerHighlight)
   events.on('renderCurrentPlayer', _highlightPlayer);
 
@@ -347,10 +347,12 @@ const players = (function() {
     currentPlayerEl.classList.add('turn');
   }
 
-  function _currentPlayer() {
+  function _currentPlayer(turn) {
+    console.log(turn);
     const player = lobby.players;
-    scoreBoard.changeCurrentPlayer((scoreBoard.getTurn() % 2 === 0)?player[0]:player[1]);
+    scoreBoard.changeCurrentPlayer((scoreBoard.getTurn() % 2 === 0)?player[1]:player[0]);
     events.emit('renderCurrentPlayer', scoreBoard.getCurrentPlayer());
+    console.log(scoreBoard.getCurrentPlayer().getId());
   }
 
   function changeTilesStyle (a, b, c) {
@@ -372,7 +374,10 @@ const players = (function() {
   let p2Score = 0;
  
   const updateRound = () => roundCount++;
-  const updateTurn = () => turnCount++;
+  const updateTurn = () =>  {
+    turnCount++;
+    events.emit('turnUpdated', turnCount);
+  };
   const getRound = () => roundCount;
   const getTurn = () => turnCount;
   const changeCurrentPlayer = (player) => _currentPlayer = player; 
@@ -395,7 +400,7 @@ const players = (function() {
     return {_win,roundCount,turnCount,_currentPlayer,p1Score,p2Score}
   }
   const _resetScoreBoard = () => {
-    win = false;
+    _win = false;
     roundCount = 0;
     turnCount = 0;
     p1Score = 0;

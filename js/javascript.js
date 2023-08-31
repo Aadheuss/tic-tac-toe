@@ -248,7 +248,7 @@ const gameBoard = (function () {
   }
   
   _createBoard(9);
-  board.forEach(tiles => _render.call(tiles, domElements, 'div'));
+  board.forEach(tiles => _render.call(tiles, domElements, 'button'));
  
   function _render (container, type) {
     const item = document.createElement(type);
@@ -282,7 +282,7 @@ const gameBoard = (function () {
 
 //Check and update the game 
 const gameBoardDom = (function() {
-  const gameBoardDom = document.querySelectorAll('.gameboard > div');
+  const gameBoardDom = document.querySelectorAll('.gameboard > button');
   gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
 
   events.on('itsATie', _renderTie);

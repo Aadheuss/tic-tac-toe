@@ -390,7 +390,7 @@ h1 {
 /*grid */
 .lobby,
 .gameboard,
-.gameboard > div {
+.gameboard > button {
   display: grid;
 }
 
@@ -476,7 +476,7 @@ h1,
   border-right: var(--white-color) 1px solid;
 }
 
-.gameboard > div {
+.gameboard > button {
   background-color: var(--white-color);
   place-items: center;
   border: 1px black solid;
@@ -649,7 +649,7 @@ button.restart {
 
 .type > *,
 .start,
-.gameboard > div,
+.gameboard > button,
 .return,
 button {
   cursor: pointer;

@@ -445,13 +445,12 @@ h1,
 }
 
 .return {
+  margin-top: 1.5rem;
   background-color: var(--black-color);
+  border-radius: 3px;
   color: var(--white-color);
-  position: absolute;
-  top: 6.5rem;
-  left: 4rem;
   border: var(--white-color) 1px solid;
-  box-shadow: 3px 3px var(--yellow);
+  box-shadow: 0 5px var(--yellow);
   padding: 0.25em 1em;
 }
 

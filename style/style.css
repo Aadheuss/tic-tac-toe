@@ -444,7 +444,7 @@ h1,
 }
 
 .scoreboard {
-  border-top: 1px solid var(--white-color);
+  border-top: 1px solid var(--human-2);
   border-left: 1px solid var(--white-color);
   justify-content: space-between;
   background-color: var(--black-color);
@@ -489,7 +489,7 @@ h1,
 .gameboard > button {
   background-color: var(--white-color);
   place-items: center;
-  border: 1px black solid;
+  border: 1px solid var(--black-color);
   font-size: 4rem;
   font-weight: 300;
   transition: all 0.6s ease-in;
@@ -642,7 +642,9 @@ h1,
   padding: 1rem 2rem;
   width: fit-content;
   height: fit-content;
-  border: #0EA5E9 1px solid;
+  border: var(--human-1) 1px solid;
+  border-right-color: var(--human-2);
+  border-left-color: var(--black-color);
   position: fixed;
   margin: auto;
   left: 0;

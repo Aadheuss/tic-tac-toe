@@ -231,7 +231,7 @@ const gameBoard = (function () {
   const board = [];
 
   events.on('boardChanged', _updateBoard);
-  events.on('boardChecked', _checkFullBoard);
+  events.on('boardChecked', _checkBoard);
   events.on('returnToLobby', _resetBoardValue);
   events.on('roundEnded', _resetBoardValue);
 
@@ -261,20 +261,20 @@ const gameBoard = (function () {
     const index = Number(info[0]);
     const value = info[1];
     const selectedBoard = board.find(obj => obj.index === index);
-    selectedBoard.value= value;
+    selectedBoard.value = value;
   }
   
-  function _checkFullBoard(win) {
-    const boardIsFull = board.every(obj => obj.value !== '');
-    //Check if the board is full and no winning board
-    if(boardIsFull && !win) {
-      events.emit('itsATie')
-    };
+  function _checkBoard(win) {
+    const fullBoard = board.every(board => board.value !== '');
+    if (fullBoard && !win) {
+      events.emit('itsATie');
+    }
   }
-  
+
   function _resetBoardValue() {
     board.forEach(obj => obj.value = '');
   }
+
   return {board};
 })();
 
@@ -407,7 +407,6 @@ const players = (function() {
     }
   }
   const _getWinner = () => {
-    console.log({p1Score, p2Score});
     let winner;
     if (p1Score > p2Score) {
       winner = lobby.players.find(player => player.getId() === 'player1');
@@ -458,7 +457,6 @@ const scoreBoardDom = (function() {
 
   //update round count to the dom
   function _updateRoundScore () {
-    console.log(scoreBoard.getInfo());
       _roundDom.textContent = scoreBoard.getRound();
   }
 })()
@@ -503,61 +501,22 @@ const gameLogic = (function() {
         events.emit('aPlayerWon', [a, b, c]);
       }
     }
-
-    events.emit('boardChecked', scoreBoard.getWin());
   }
 
   function checkBoard() {
       checkRow ([0, 3, 6]);
       checkColumn([0, 1, 2]);
       checkCross([4, 2]);
+      events.emit('boardChecked', scoreBoard.getWin());
   }
 })();
 
 //typeofPlayer
-const humanOrBot = (function() {
-  const boardDom = document.querySelectorAll('.gameboard > div');
-  const board = gameBoard.board;
-
-  function humanTurn (player) {
-    if (this.textContent === '') {
-      this.value = player.weapon;
-      this.textContent = this.value;
-      const index = Number(this.getAttribute('data-index'));
-      board[index].value = this.value;
-      scoreBoard.turn++;
-      gameLogic.checkBoard();
-      currentPlayer.updateTurn();
-      if (playerStatus.nextPlayer.type === 'ai') {
-        setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
-      }
-      gameLogic.checkFullBoard()
-    }
+const ai = (function() {
+  function robotTurn (player) { 
+    const index = item.index;
   }
-
-  function robotTurn (player) {
-    if (scoreBoard.win !== true && board.forEach(tiles => tiles.value !== '') !== true) {
-      const emptyBoard = board.filter(board => board.value === '');
-      if (emptyBoard.length > 0) {
-        const item = emptyBoard[Math.floor((Math.random()*emptyBoard.length))];
-        const index = item.index;
-        board[index].value =  player.weapon;
-        const selectedBoard = document.querySelector(`[data-index='${index}']`)
-        selectedBoard.textContent = player.weapon;
-        scoreBoard.turn++;
-        gameLogic.checkBoard();
-        currentPlayer.updateTurn();
-        if (playerStatus.nextPlayer.type === 'ai') {
-          setTimeout(gameBoardDom.checkPlayerTurn.bind(this), 900);
-        } else {
-          boardDom.forEach(tiles => tiles.addEventListener('click', gameBoardDom.checkPlayerTurn));
-        }
-        gameLogic.checkFullBoard()
-      }
-    }
-  }
-
-  return {robotTurn, humanTurn};
+  return {robotTurn};
 })();
 
 //for label Name if the input is not empty

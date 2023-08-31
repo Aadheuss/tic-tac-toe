@@ -622,15 +622,12 @@ h1,
   place-content: center;
   background-color: var(--black-color);
   color: var(--human-light);
-}
-
-.winner > div:first-child {
   font-weight: 500;
   font-size: 1.05rem;
   color: #475569;
   place-items: center;
   gap: 0.75rem;
-  padding: 1rem 1.5rem;
+  padding: 1rem 2rem;
   width: fit-content;
   height: fit-content;
   border: #0EA5E9 1px solid;
@@ -641,7 +638,6 @@ h1,
   bottom: 0;
   top: 0;
 }
-
 
 button.restart {
   border: 1px var(--black-color) solid;

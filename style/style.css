@@ -673,8 +673,9 @@ button.restart:hover {
   background-image: linear-gradient(to right, var(--human-1), var(--human-2));
 }
 
-button.restart,
-.return:hover {
+.restart:hover,
+.return:hover,
+.start:hover {
   transform: scale(1.05);
   border-top-color: var(--human-1);
   border-bottom-color: var(--human-2);

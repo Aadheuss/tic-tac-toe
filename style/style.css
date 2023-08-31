@@ -409,8 +409,10 @@ h1,
 }
 
 .gameboard {
+  height: clamp(250px,450px, 25vw);
   box-shadow: 5px 5px var(--yellow);
-  grid-template-columns: repeat(3, 100px);
+  grid-template-columns: repeat(3, minmax(50px, 1fr));
+  grid-template-rows: repeat(3, minmax(50px, 1fr));
 }
 
 .game h1 {
@@ -422,8 +424,8 @@ h1,
   min-height: 100vh;
   font-weight: 500;
   display: grid;
-  grid-template-rows: min-content 1fr;
   align-items: center;
+  justify-content: center;
   background-color: var(--black-color);
   width: 100vw;
 }
@@ -437,11 +439,14 @@ h1,
   padding: 2rem 1rem;
 }
 
+.game-arena {
+  width: clamp(100%, 450px, 25vw);
+}
+
 .scoreboard {
   border-top: 1px solid var(--white-color);
   border-left: 1px solid var(--white-color);
   justify-content: space-between;
-  width: 300px;
   background-color: var(--black-color);
 }
 
@@ -466,7 +471,6 @@ h1,
   gap: 0.25rem;
   font-size: 1.25rem;
   justify-content: center;
-  width: 300px;
 }
 
 .scoreboard > div {
@@ -475,7 +479,7 @@ h1,
   flex: 1;
   padding: 0.25em 1em;
   color: var(--white-color);
-  font-size: 1.25rem;
+  font-size: clamp(0.75rem, 3.5vw, 1.25rem);
 }
 
 .scoreboard > div:first-child {
@@ -486,7 +490,6 @@ h1,
   background-color: var(--white-color);
   place-items: center;
   border: 1px black solid;
-  height: 100px;
   font-size: 4rem;
   font-weight: 300;
   transition: all 0.6s ease-in;
@@ -723,10 +726,6 @@ button.restart,
 
   .start {
     font-size: 1.25rem;
-  }
-
-  .return {
-    left: 1rem;
   }
 }
 

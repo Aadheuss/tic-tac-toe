@@ -445,6 +445,7 @@ h1,
 }
 
 .return {
+  background-color: var(--black-color);
   color: var(--white-color);
   position: absolute;
   top: 6.5rem;
@@ -520,7 +521,7 @@ h1,
   background-image: linear-gradient(to top, #757f9a , #d7dde8);
 }
 
-.players-container > div:nth-child(2) {
+.players-container > button:nth-child(2) {
   color: var(--white-color);
   font-weight: 100;
   font-size: 5rem;
@@ -578,6 +579,7 @@ h1,
 }
 
 .start {
+  background-color: var(--black-color);
   color: var(--white-color);
   padding: 0.5em 1em;
   border: 1px solid var(--yellow);

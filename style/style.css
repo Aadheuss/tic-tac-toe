@@ -409,7 +409,7 @@ h1,
 }
 
 .gameboard {
-  height: clamp(250px,450px, 25vw);
+  height: clamp(300px,450px, 23vw);
   box-shadow: 5px 5px var(--yellow);
   grid-template-columns: repeat(3, minmax(50px, 1fr));
   grid-template-rows: repeat(3, minmax(50px, 1fr));

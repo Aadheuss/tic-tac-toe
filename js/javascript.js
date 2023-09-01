@@ -161,7 +161,9 @@ const gameArea = (function() {
   const restartBtn = document.querySelector('.restart');
   returnBtn.addEventListener('click', _hideDom);
   restartBtn.addEventListener('click', _restartGame);
-
+  events.on('itsATie', _removeReturnListener);
+  events.on('aPlayerWon', _removeReturnListener);
+  events.on('roundEnded', _addReturnListener);
   events.on('startGame', _showDom);
   events.on('renderWinner', _announceWinner);
 
@@ -178,6 +180,15 @@ const gameArea = (function() {
   function _restartGame() {
     winContainer.close();
     events.emit('restartGame');
+  }
+
+  function _addReturnListener() {
+    setTimeout(returnBtn.addEventListener.bind(returnBtn, 'click', _hideDom), 100);
+  }
+
+  function _removeReturnListener() {
+    setTimeout(returnBtn.removeEventListener.bind(returnBtn, 'click', _hideDom), 100);
+    console.log('hy');
   }
 
   function _announceWinner (winner) {
@@ -293,6 +304,7 @@ const gameBoardDom = (function() {
   events.on('returnToLobby', _resetBoard);
   events.on('aPlayerWon', _renderWin)
   events.on('roundEnded', _resetBoard);
+
   //select board if board is empty
   function _selectBoard(e) {
     const selectedBoard = e.target.getAttribute('data-index');

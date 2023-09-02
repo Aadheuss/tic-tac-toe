@@ -188,7 +188,6 @@ const gameArea = (function() {
 
   function _removeReturnListener() {
     setTimeout(returnBtn.removeEventListener.bind(returnBtn, 'click', _hideDom), 100);
-    console.log('hy');
   }
 
   function _announceWinner (winner) {
@@ -277,8 +276,6 @@ const gameBoard = (function () {
     const value = info[1];
     const selectedBoard = board.find(obj => obj.index === index);
     selectedBoard.value = value;
-
-    console.log(scoreBoard.getTurn());
   }
   
   function _checkBoard(win) {
@@ -290,6 +287,7 @@ const gameBoard = (function () {
 
   function _resetBoardValue() {
     board.forEach(obj => obj.value = '');
+    setTimeout(events.emit.bind(events,'boardReset', board), 100);
   }
 
   return {board};
@@ -302,8 +300,9 @@ const gameBoardDom = (function() {
 
   events.on('itsATie', _renderTie);
   events.on('returnToLobby', _resetBoard);
-  events.on('aPlayerWon', _renderWin)
+  events.on('aPlayerWon', _renderWin);
   events.on('roundEnded', _resetBoard);
+  events.on('aiMoved', _aiSelectBoard);
 
   //select board if board is empty
   function _selectBoard(e) {
@@ -316,6 +315,13 @@ const gameBoardDom = (function() {
     }
   }
 
+  function _aiSelectBoard(board) {
+    const selectedBoard = Array.from(gameBoardDom).find(obj => Number(obj.getAttribute('data-index')) === board.index);
+    const selectedBoardVal = scoreBoard.getCurrentPlayer().getWeapon();
+    selectedBoard.textContent = selectedBoardVal;
+    events.emit('boardChanged', [board.index, selectedBoardVal]);
+    events.emit('updatePlayerTurn', scoreBoard.getRound());
+  }
   //change game board tiles when no players win
   function _renderTie() {
     gameBoardDom.forEach(item => item.classList.add('tie'));
@@ -340,18 +346,19 @@ const gameBoardDom = (function() {
     );
     gameBoardDom.forEach(tiles => setTimeout.bind(this,tiles.addEventListener('click', _selectBoard)), 100);
   }
-  return {};
+  return {gameBoardDom};
 })();
 
 //highlight the current player
 const players = (function() {
   //scoreboard to keep score on the dom
-  const _scoreBoard = document.querySelector('.scoreboard');
   const _playersScoreBoard = document.querySelectorAll('.scoreboard>div');
 
   events.on('turnUpdated', _currentPlayer);
   events.on('renderCurrentPlayer', _removePlayerHighlight)
   events.on('renderCurrentPlayer', _highlightPlayer);
+  events.on('currentPlayerChanged', _checkPlayerType);
+  events.on('boardReset', _currentPlayer)
 
   function _removePlayerHighlight(player) {
     const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') !== player.getId());
@@ -364,11 +371,18 @@ const players = (function() {
   }
 
   function _currentPlayer(turn) {
-    console.log(turn);
     const player = lobby.players;
     scoreBoard.changeCurrentPlayer((scoreBoard.getTurn() % 2 === 0)?player[1]:player[0]);
     events.emit('renderCurrentPlayer', scoreBoard.getCurrentPlayer());
-    console.log(scoreBoard.getCurrentPlayer().getId());
+    events.emit('currentPlayerChanged', scoreBoard.getCurrentPlayer());
+  }
+
+  function _checkPlayerType(player) {
+    if (player.getType() === 'ai') {
+      if(scoreBoard.getRound() <= 3) {
+        ai.aiTurn(gameBoard.board, player);
+      }
+    }
   }
 
   function changeTilesStyle (a, b, c) {
@@ -534,10 +548,16 @@ const gameLogic = (function() {
 
 //typeofPlayer
 const ai = (function() {
-  function robotTurn (player) { 
-    const index = item.index;
+  function aiTurn (gameBoard) {
+    const availableBoard =  gameBoard.filter(board => board.value === '');
+    const index = Math.floor(Math.random()*availableBoard.length);
+    const selectedBoard = availableBoard[index];
+    if (availableBoard.length !== 0 && !scoreBoard.getWin()) {
+      setTimeout(events.emit.bind(events,'aiMoved', selectedBoard), 500);
+    }
   }
-  return {robotTurn};
+
+  return { aiTurn };
 })();
 
 //for label Name if the input is not empty

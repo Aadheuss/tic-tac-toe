@@ -296,15 +296,24 @@ const gameBoard = (function () {
 //Check and update the game 
 const gameBoardDom = (function() {
   const gameBoardDom = document.querySelectorAll('.gameboard > button');
-  gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
 
   events.on('itsATie', _renderTie);
-  events.on('returnToLobby', _resetBoard);
+  events.on('startGame', _resetBoard);
   events.on('aPlayerWon', _renderWin);
   events.on('roundEnded', _resetBoard);
   events.on('aiMoved', _aiSelectBoard);
 
   //select board if board is empty
+  function ToggleListener(type) {
+    if (type === 'AI') {
+      gameBoardDom.forEach(tiles => tiles.removeEventListener('click', _selectBoard));
+    } else {
+      const full = gameBoard.board.every(board => board.value !== '');
+      if (!scoreBoard.getWin() && !full) 
+      gameBoardDom.forEach(tiles => tiles.addEventListener('click', _selectBoard));
+    }
+  }
+
   function _selectBoard(e) {
     const selectedBoard = e.target.getAttribute('data-index');
     const selectedBoardVal = scoreBoard.getCurrentPlayer().getWeapon()
@@ -346,7 +355,7 @@ const gameBoardDom = (function() {
     );
     gameBoardDom.forEach(tiles => setTimeout.bind(this,tiles.addEventListener('click', _selectBoard)), 100);
   }
-  return {gameBoardDom};
+  return {gameBoardDom, ToggleListener};
 })();
 
 //highlight the current player
@@ -358,7 +367,7 @@ const players = (function() {
   events.on('renderCurrentPlayer', _removePlayerHighlight)
   events.on('renderCurrentPlayer', _highlightPlayer);
   events.on('currentPlayerChanged', _checkPlayerType);
-  events.on('boardReset', _currentPlayer)
+  events.on('boardReset', _currentPlayer);
 
   function _removePlayerHighlight(player) {
     const currentPlayerEl = Array.from(_playersScoreBoard).find(el => el.getAttribute('data-score') !== player.getId());
@@ -381,7 +390,10 @@ const players = (function() {
     if (player.getType() === 'ai') {
       if(scoreBoard.getRound() <= 3) {
         ai.aiTurn(gameBoard.board, player);
+        gameBoardDom.ToggleListener('AI');
       }
+    } else {
+        setTimeout(gameBoardDom.ToggleListener.bind(this,'HUMAN'), 200);
     }
   }
 
@@ -453,6 +465,7 @@ const players = (function() {
     events.emit('renderWinner', winner);
   }
 
+  events.on('startGame', _resetScoreBoard);
   events.on('startGame', updateTurn);
   events.on('startGame', updateRound);
   events.on('restartGame', _resetScoreBoard);
@@ -463,7 +476,6 @@ const players = (function() {
   events.on('aPlayerWon', updatePlayerScore);
   events.on('roundEnded', updateRound);
   events.on('roundEnded', _resetWin);
-  events.on('returnToLobby', _resetScoreBoard);
   events.on('gameOver', _getWinner);
   events.on('roundEnded', isGameOver);
 
@@ -557,7 +569,7 @@ const ai = (function() {
     }
   }
 
-  return { aiTurn };
+  return { aiTurn }
 })();
 
 //for label Name if the input is not empty

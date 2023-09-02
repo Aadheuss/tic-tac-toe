@@ -246,9 +246,9 @@ const gameBoard = (function () {
 
   events.on('boardChanged', _updateBoard);
   events.on('boardChecked', _checkBoard);
-  events.on('returnToLobby', _resetBoardValue);
+  events.on('startGame', _resetBoardValue);
   events.on('roundEnded', _resetBoardValue);
-
+  events.on('roundEnded', _startNewRound);
   function _tiles (index, value) {
     return {index, value};
   }
@@ -287,6 +287,9 @@ const gameBoard = (function () {
 
   function _resetBoardValue() {
     board.forEach(obj => obj.value = '');
+  }
+
+  function _startNewRound() {
     setTimeout(events.emit.bind(events,'boardReset', board), 100);
   }
 
